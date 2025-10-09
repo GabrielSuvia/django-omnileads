@@ -1,0 +1,143 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+    <h1>{% blocktrans with nombre_template=object.nombre_template %}Template {{nombre_template}}{% endblocktrans %}</h1>
+        <table class="table table-striped">
+            <tr>
+                <td><strong>{% trans 'Template de campaña dialer' %} </strong></td>
+                <td>{{object.nombre_template}}</td>
+            </tr>
+            <tr>
+                <td>{% trans 'Nombre de campana' %}</td>
+                <td>{{object.nombre}}</td>
+            </tr>
+            <tr>
+                <td>{% trans 'Calificación campana' %}</td>
+                <td>{{object.calificacion_campana}}</td>
+            </tr>
+            <tr>
+                <td>{% trans 'Tipo de interacción' %} {{object.get_tipo_interaccion_display}} </td>
+                <td>
+                    {% if object.tipo_interaccion == 2 %}
+                        {{ object.sitio_externo }}
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2"><strong>{% trans 'Cola' %}</strong></td>
+            </tr>
+            <tr>
+                <td>{% trans 'Cantidad Max de llamadas:' %}</td>
+                <td>{{object.queue_campana.maxlen}}</td>
+            </tr>
+            <tr>
+                <td>{% trans 'Tiempo de descanso entre llamadas:' %}</td>
+                <td>{{object.queue_campana.wrapuptime}}</td>
+            </tr>
+            <tr>
+                <td>{% trans 'Nivel de Servicio:' %}</td>
+                <td>{{object.queue_campana.servicelevel}}</td>
+            </tr>
+            <tr>
+                <td>{% trans 'Estrategia de distribución:' %}</td>
+                <td>{{object.queue_campana.get_strategy_display}}</td>
+            </tr>
+            <tr>
+                <td>{% trans 'Importancia de campaña:' %}</td>
+                <td>{{object.queue_campana.weight}}</td>
+            </tr>
+            <tr>
+                <td>{% trans 'Tiempo de espera en cola:' %}</td>
+                <td>{{object.queue_campana.wait}}</td>
+            </tr>
+            <tr>
+                <td>{% trans 'Grabar llamados:' %}</td>
+                <td>
+                    {% if object.queue_campana.auto_grabacion %}
+                        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                    {% else %}
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>{% trans 'Detectar contestadores:' %}</td>
+                <td>
+                    {% if object.queue_campana.detectar_contestadores %}
+                        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                    {% else %}
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>{% trans 'Días de actuación:' %}</td>
+                <td>{{object.actuacionvigente.get_dias_vigente_display}}</td>
+            </tr>
+            <tr>
+                <td>{% trans 'Horario de actuación:' %}</td>
+                <td>{{object.actuacionvigente.hora_desde}}hs - {{object.actuacionvigente.hora_hasta}}hs</td>
+            </tr>
+        </table>
+        <br>
+    <div>
+        <h2>{% trans 'Reglas de incidencia' %}</h2>
+        <br>
+        <table class="table table-hover">
+            <thead>
+            <tr class="fts-table-bg">
+                <th>{% trans 'Estado' %}</th>
+                <th>{% trans 'Con estado personalizado' %}</th>
+                <th>{% trans 'Reintentar más tarde' %}</th>
+                <th>{% trans 'Modo de reintento' %}</th>
+                <th>{% trans 'Intento max.' %}</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for reglas in object.reglas_incidencia.all %}
+                    <tr>
+                        <td>{{reglas.get_estado_display}}</td>
+                        <td>
+                            {% if reglas.estado_personalizado %}
+                                {{ reglas.estado_personalizado }}
+                            {% endif %}
+                        </td>
+                        <td>{{ reglas.reintentar_tarde }}s.</td>
+                        <td>{{ reglas.get_en_modo_display}}</td>
+                        <td>{{ reglas.intento_max }}</td>
+                    </tr>
+                 {% empty %}
+                    <tr>
+                        <td colspan="5  ">
+                            <p class="text-center text-danger">
+                                <em>{% trans 'No se encontraron reglas creadas.' %}</em>
+                            </p>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <hr>
+    <a href="{% url 'lista_campana_dialer_template' %}" class="btn btn-outline-primary">{% trans 'Volver a listado de template' %}</a>
+{% endblock %}

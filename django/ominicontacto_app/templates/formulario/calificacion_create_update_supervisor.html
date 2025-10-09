@@ -1,0 +1,91 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/auditoria.css' %}" >
+{% endblock extra_css%}
+{% block head_js %}
+  <script src="{% static 'ominicontacto/JS/agente/formularioCalificacion.js' %}"></script>
+{% endblock head_js %}
+
+{% block content %}
+    
+    <input class="hidden" value="{{ configuracion_sitio_externo|safe }}" id="configuracionSitioExterno">
+
+    {% if campana.mostrar_nombre %}
+        <h1>{{ campana.nombre }}</h1>
+    {% endif %}
+
+    {% if call_data and call_data.ics %}
+        <div><b>{% trans "Nombre Contacto ICS:" %}</b> {{ call_data.nombre_contacto_ics }}</div>
+        <div><b>{% trans "ID Contacto ICS:" %}</b> {{ call_data.id_contacto_ics }}</div>
+        <br>
+    {% endif %}
+
+    <form id="form_sitio_externo">
+        <input id="submit_interaccion" type="hidden" name="" value="{% trans 'Interacción CRM' %}">
+    </form>
+
+    <form id="form-calificacion" action = "" method = "post">
+        {% csrf_token %}
+        <div class="row mt-3">
+            <div class="col-md-6">
+
+                {% for field in contacto_form %}
+                    <tr>
+                        <th>{{ field.label_tag }}</th>
+                        <th>{{ field.errors }}</th>
+                        <td> {{ field }}
+                        <!-- TODO: ver si esta vista y la de agente extienden de una en comun
+                        {% if contacto and field.name in campos_telefono %}
+                                <a class="btn btn-submit btn-outline-primary" href="javascript:;" onclick="makeClick2Call('{{ campana.id }}', '{{ campana.type }}', '{{ contacto.id }}', '{{ field.value }}', 'agendas');" name="click2call">{{ field.value }}</a>
+                        {% endif %} -->
+                        </td>
+                    </tr>
+                {% endfor %}
+            </div>
+            <div class="col-md-6">
+                <div data="toHide" id="calificacion_form">
+                    {{calificacion_form.as_table}}
+                </div>
+                {% with auditoria=calificacion_form.instance.obtener_auditoria %}
+                  {% if auditoria%}
+                      <div class="calificacion_auditada">
+                        <h2>{% trans 'Calificación Auditada'%}</h2>
+                        <p><b>{% trans 'Resultado Auditoria: '%}</b>{{auditoria.get_resultado_display}}</p>
+                        <p><b>{% trans 'Observaciones: '%}</b>{{auditoria.observaciones}}</p>
+                      </div>
+                  {% endif %}
+                {% endwith %}
+                <div data="toHide">
+                    {% if calificacion_form.historico_calificaciones %}
+                        {% include 'historico_calificaciones.html' with calificaciones=calificacion_form.instance.history.all %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <hr>
+        <button type="submit" id="id_guardar" class="btn btn-primary">
+            {% trans 'Guardar'  %}
+        </button>
+    </form>
+
+{% endblock content %}

@@ -1,0 +1,19 @@
+.fieldsFormset {
+    margin: 5px;
+}
+
+.deleteFormset {
+    margin: 10px;
+}
+
+.addFormset {
+    margin-bottom: 5px;
+}
+
+#gruposAgentes {
+    margin-bottom: 10px;
+}
+
+th {
+    padding-right: 50px !important;
+}

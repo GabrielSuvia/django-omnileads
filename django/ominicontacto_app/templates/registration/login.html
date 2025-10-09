@@ -1,0 +1,74 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %} {% trans 'Logueo Usuario' %} {% endblock %}
+
+{% block logueo %}
+  {% if user_is_blocked %}
+    <div class="alert alert-danger">
+      <p> {{ detail }} </p>
+    </div>
+  {% elif not user.is_authenticated %}
+    {% if login_unsuccessful and not user_is_blocked%}
+        <div class="alert alert-danger">
+            <p> {% trans 'Username/password incorrecto ingrese nuevamente los datos' %}</p>
+    {% endif %}
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-2 offset-md-10">
+                    {% include 'cambiar_idioma.html' %}
+                </div>
+            </div>
+        </div>
+        <div class="wrapper-content login">
+            <form role="form" method="post" action="">
+                {% csrf_token %}
+                <div>
+                    <img src="{% static 'ominicontacto/Img/ic_logo_full.png' %}" alt="FtsLogo" width="240">
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label">{% trans 'Usuario' %}</label>
+                    <div>
+                        {{ form.username }}
+                        <span class="help-inline text-danger">
+                            {{ form.username.errors }}
+                        </span>
+                    </div>
+                 </div>
+
+                <div class="form-group">
+                    <label class="control-label">{% trans 'Clave' %}</label>
+                    <div>
+                        {{ form.password }}
+                        <span class="help-inline text-danger">
+                            {{ form.password.errors }}
+                        </span>
+                    </div>
+                 </div>
+                <br>
+                <button class="btn btn-outline-primary" type="submit" >{% trans 'Ingresar' %}</button>
+            </form>
+        </div>
+  {% endif %}
+{% endblock %}

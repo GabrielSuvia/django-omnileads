@@ -1,0 +1,265 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "campanas/campana_manual/campana_list_base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/jquery.dataTables.min.css' %}">
+{% endblock %}
+
+{% block head_js %}
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/csrf.js' %}"></script>
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/ext/jquery.dataTables.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/campanas/datatables.js' %}"></script>
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/campanas/campana_preview/campana_list.js' %}"></script>
+{% endblock %}
+
+{% block titulo_lista_campanas %}
+    <h1>{% trans 'Campañas preview' %}</h1>
+    <form role="form" id="option_preview" action="" method="POST">
+        {% csrf_token %}
+        <input type="hidden" id="campana_pk" name="campana_pk">
+    </form>
+{% endblock %}
+
+{% block campanas_activas %}
+    {% for campana in activas %}
+        <tr>
+            <td width="5%">{{ campana.id }}</td>
+            <td width="25%">
+                    <a href="#" onclick="mostrar_detalle_campana({{ campana.id }})">{{ campana.nombre }}</a>
+                    <a href="{% url 'campana_preview_detalle' campana.pk %}">
+                        &nbsp;<span class="icon icon-search" aria-hidden="true" title="ver detalles"></span>
+                    </a>
+            </td>
+            <td> {{campana.get_estado_display}}  </td>
+            <td width="14%">
+                <div class="dropdown">
+                    <button class="btn btn-light dropdown-toggle" type="button" id="dropdownCampaignActive{{campana.pk}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {% trans 'Opciones'  %}
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownCampaignActive{{campana.pk}}">
+                        <a class="dropdown-item" href="{% url 'campana_preview_update' campana.pk %}">
+                            <span class="icon icon-pencil"></span>{% trans 'Modificar'  %}
+                        </a>
+                        <a class="dropdown-item" href="{% url 'actualizar_contactos_preview' campana.pk %}">
+                            <span class="icon icon-pencil"></span>{% trans 'Actualizar contactos'  %}
+                        </a>
+                        <a class="dropdown-item" href="{% url 'queue_member_campana' campana.pk %}">
+                            <span class="icon icon-plus"></span>{% trans 'Agregar agentes' %}
+                        </a>
+                        <a class="dropdown-item" href="{% url 'campana_preview_supervisors' campana.pk %}">
+                            <span class="icon icon-eye"></span>{% trans 'Dar permiso para ver'  %}
+                        </a>
+                        <a class="dropdown-item" href="{% url 'campana_reporte_calificacion' campana.pk %}">
+                            <span class="icon icon-list"></span>{% trans 'Calificaciones'  %}
+                        </a>
+                        <a class="dropdown-item" href="{% url 'reporte_de_resultados' campana.pk %}">
+                            <span class="icon icon-graph"></span>{% trans 'Resultados de Base' %}
+                        </a>
+                        <a class="dropdown-item" href="{% url 'campana_reporte_grafico' campana.pk %}">
+                            <span class="icon icon-graph"></span>{% trans 'Reportes'  %}
+                        </a>
+                        <a class="dropdown-item" href="{% url 'contactos_preview_asignados' campana.pk %}">
+                            <span class="icon icon-contacts"></span>{% trans 'Ver Contactos Asignados' %}
+                        </a>
+                        <a class="dropdown-item" href="{% url 'ordenar_entrega_contactos_preview' campana.pk %}">
+                            <span class="icon icon-contacts"></span>{% trans 'Ordenar entrega contactos' %}
+                        <a class="dropdown-item" href="{% url 'agregar_contacto_a_campana' campana.pk %}">
+                            <span class="icon icon-plus"></span>{% trans 'Agregar Contacto' %}
+                        </a>
+                        <a class="dropdown-item" href="{% url 'update_base_datos_contacto_de_campana' campana.pk %}">
+                            <span class="icon icon-plus"></span>{% trans 'Agregar Contactos' %}
+                        </a>
+                        <a class="dropdown-item" href="{% url 'bloquear_campos_para_agente' campana.pk %}">
+                            <span class="icon icon-cancel"></span>{% trans 'Restringir campos de contacto' %}
+                        </a>
+                        <a class="dropdown-item" href="{% url 'agenda_contactos_por_campana' campana.pk %}">
+                            <span class="icon icon-agenda"></span>{% trans 'Ver Agendas' %}
+                        </a>
+                        <a class="dropdown-item" href="{% url 'configurar_agentes_en_campana' campana.pk %}">
+                            <span class="icon icon-pencil"></span>{% trans 'Configuraciones para agentes' %}
+                        </a>
+                        <a class="dropdown-item action_for_campaign" value="{% url 'finalizar_campana_preview' %}" href="#" camp-id="{{ campana.pk }}">
+                            <span class="icon icon-cancel"></span>{% trans 'Finalizar' %}
+                        </a>
+                        <a class="dropdown-item" href="{% url 'campana_preview_delete' campana.pk %}">
+                            <span class="icon icon-trash"></span>{% trans 'Eliminar' %}
+                        </a>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="3">{% trans 'No existen campañas' %}</td>
+        </tr>
+    {% endfor %}
+{% endblock %}
+
+{% block campanas_finalizadas %}
+    <h2>{% trans 'Campañas Finalizadas' %}</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th width="5%">{% trans 'Id'  %}</th>
+                <th>{% trans 'Nombre'  %}</th>
+                <th>{% trans 'Estado'  %}</th>
+                <th>{% trans 'Acciones' %}&nbsp;&nbsp;</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for campana in finalizadas %}
+                <tr>
+                    <td width="5%">{{ campana.id }}</td>
+                    <td width="25%">
+                        <a href="#" onclick="mostrar_detalle_campana({{ campana.id }})">{{ campana.nombre }}</a>
+                        <a href="{% url 'campana_preview_detalle' campana.pk %}">
+                            &nbsp;<span class="icon icon-search" aria-hidden="true" title="{% trans 'ver detalles' %}"></span>
+                        </a>
+                    </td>
+                    <td> {{campana.get_estado_display}}  </td>
+                    <td width="14%">
+                        <div class="dropdown">
+                            <button class="btn btn-light dropdown-toggle" type="button" id="dropdownCampaignFinished{{ campana.pk }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {% trans 'Opciones'  %}
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownCampaignFinished{{ campana.pk }}">
+                                <a class="dropdown-item" href="{% url 'campana_preview_supervisors' campana.pk %}">
+                                    <span class="icon icon-eye"></span>{% trans 'Dar permiso para ver'  %}
+                                </a>
+                                <a class="dropdown-item" href="{% url 'campana_reporte_calificacion' campana.pk %}">
+                                    <span class="icon icon-list"></span>{% trans 'Calificaciones'  %}
+                                </a>
+                                <a class="dropdown-item" href="{% url 'reporte_de_resultados' campana.pk %}">
+                                    <span class="icon icon-graph"></span>{% trans 'Resultados de Base' %}
+                                </a>
+                                <a class="dropdown-item" href="{% url 'campana_reporte_grafico' campana.pk %}">
+                                    <span class="icon icon-graph"></span>{% trans 'Reportes'  %}
+                                </a>
+                                <a class="dropdown-item" href="{% url 'reciclar_campana_preview' campana.pk %}">
+                                    <span class="icon icon-refresh"></span>{% trans 'Reciclar'  %}
+                                </a>
+                                <a class="dropdown-item" href="{% url 'ordenar_entrega_contactos_preview' campana.pk %}">
+                                    <span class="icon icon-contacts"></span>{% trans 'Ordenar entrega contactos' %}
+                                <a class="dropdown-item" data-toggle="tooltip" data-placement="top" title="{% trans 'Se reactivará la campaña' %}" href="{% url 'agregar_contacto_a_campana' campana.pk %}">
+                                    <span class="icon icon-plus"></span>{% trans 'Agregar Contacto' %}
+                                </a>
+                                <a class="dropdown-item" data-toggle="tooltip" data-placement="top" title="{% trans 'Se reactivará la campaña' %}" href="{% url 'update_base_datos_contacto_de_campana' campana.pk %}">
+                                    <span class="icon icon-plus"></span>{% trans 'Agregar Contactos' %}
+                                </a>
+                                <a class="dropdown-item" href="{% url 'campana_preview_delete' campana.pk %}">
+                                    <span class="icon icon-trash"></span>{% trans 'Eliminar'  %}
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">{% trans 'No existen campañas'  %}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br/>
+{% endblock %}
+
+
+{% block campanas_borradas %}
+    {% for campana in borradas %}
+        <tr>
+            <td width="5%">{{ campana.id }}</td>
+            <td width="25%">
+                {{ campana.nombre }}<a href="{% url 'campana_preview_detalle' campana.pk %}">
+                    &nbsp;<span class="icon icon-search" aria-hidden="true" title="ver detalles"></span>
+                </a>
+            </td>
+            <td> {{campana.get_estado_display}} </td>
+            <td width="14%">
+                <div class="dropdown">
+                    <button class="btn btn-light dropdown-toggle" type="button" id="dropdownCampaignDeleted" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {% trans 'Opciones' %}
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownCampaignDeleted">
+                        <a class="dropdown-item" href="{% url 'campana_reporte_calificacion' campana.pk %}">
+                            <span class="icon icon-list"></span>{% trans 'Calificaciones' %}
+                        </a>
+                        <a class="dropdown-item" href="{% url 'reporte_de_resultados' campana.pk %}">
+                            <span class="icon icon-graph"></span>{% trans 'Resultados de Base' %}
+                        </a>
+                        <a class="dropdown-item" href="{% url 'campana_reporte_grafico' campana.pk %}">
+                            <span class="icon icon-graph"></span>{% trans 'Reportes' %}
+                        </a>
+                        {% if campana.oculto %}
+                        <a class="dropdown-item campana-mostrar-esconder" data="visible" href="">
+                            <input class="hidden" name="campana-{{campana.pk}}" type="text" value={{ campana.pk }}>
+                            <span class="icon icon-eye"></span>{% trans 'Hacer visible' %}
+                        </a>
+                        {% else %}
+                        <a class="dropdown-item campana-mostrar-esconder" data="visible" href="">
+                            <input class="hidden" name="campana-{{campana.pk}}" type="text" value={{ campana.pk }}>
+                            <span class="icon icon-eye-slash"></span>{% trans 'Ocultar'  %}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="3">{% trans 'No existen campañas' %}</td>
+        </tr>
+    {% endfor %}
+
+    <div class="modal fade" id="modal_desconectado" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title">Usuario desconectado</h1>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p>{% trans 'Refresque la página y vuelva a ingresar para poder acceder a la funcionalidad deseada' %}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{% trans 'Cerrar' %}</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
+
+    <div class="modal" id="reporteModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title">{% trans 'Estadísticas campaña' %}</h1>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{% trans 'Cerrar'  %}</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
+
+{% endblock %}

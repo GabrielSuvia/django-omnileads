@@ -1,0 +1,71 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "agente/frame/base_frame.html" %}
+{% load compress %}
+{% load static %}
+{% load i18n %}
+
+{% block head_js %}
+    <script type="text/javascript">
+    // Load Agendas dates to AgendasNotifier from iframe
+    $(function() {
+        if (window.parent.hasOwnProperty('agendas_notifier')){
+          var agendas_notifier = window.parent.agendas_notifier;
+          let agendas_dates = JSON.parse($('#agendas_dates_json').val());
+          agendas_notifier.set_agendas(agendas_dates);
+        }
+    });
+    </script>
+{% endblock head_js %}
+
+{% block content %}
+<input type="hidden" id="agendas_dates_json" value="{{ fechas_agendas_json }}">
+<div class="container">
+    <div class="row">
+        <div class="col-md-9">
+            <table class="table table-striped">
+                <tr>
+                    <td><strong>{% trans 'Agenda para el contacto con el teléfono' %}</strong></td>
+                    <td>{{object.telefono}}</td>
+                </tr>
+                <tr>
+                    <td>{% trans 'Fecha' %}</td>
+                    <td>{{object.fecha}}</td>
+                </tr>
+                <tr>
+                    <td>{% trans 'Hora' %}</td>
+                    <td>{{object.hora}}</td>
+                </tr>
+                <tr>
+                    <td>{% trans 'Tipo' %}</td>
+                    <td>{{object.get_tipo_agenda_display}}</td>
+                </tr>
+                <tr>
+                    <td>{% trans 'Telefono' %}</td>
+                    <td>{{object.telefono}}</td>
+                </tr>
+                <tr>
+                    <td>{% trans 'Observaciones' %}</td>
+                    <td>{{object.observaciones}}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}

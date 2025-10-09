@@ -1,0 +1,105 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "agente/frame/base_frame.html" %}
+{% load static %}
+{% load compress %}
+{% load i18n %}
+
+{% block head_js %}
+  <script type="text/javascript" src="{% static 'ominicontacto/JS/config_datetimepicker.js' %}"></script>
+  <script type="text/javascript" src="{% static 'ominicontacto/JS/agente/make_click2call.js' %}"></script>
+  <script type="text/javascript">
+    if (window.parent.hasOwnProperty('agendas_notifier')){
+        var agendas_notifier = window.parent.agendas_notifier;
+        agendas_notifier.clear_notifications();
+    }
+  </script>
+{% endblock head_js %}
+
+{% block content %}
+<div class="container-fluid">
+    <div id="wrapper-search">
+        
+        <div id="wrapperSearchForm">
+            <form role="form" method="post" enctype="multipart/form-data" >
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="col-md-1">
+                        <h2> {% trans 'Buscar' %} </h2>
+                    </div>
+                    <div class="col-md-7">
+                        {{form.fecha}}
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" id="id_buscar_btn" class="btn btn-primary">
+                            {% trans 'Filtrar' %}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{% trans 'Contacto' %}</th>
+                <th>{% trans 'Campaña' %}</th>
+                <th>{% trans 'Datos' %}</th>
+                <th>{% trans 'Fecha' %}</th>
+                <th>{% trans 'Hora' %}</th>
+                <th>{% trans 'Tipo' %}</th>
+                <th>{% trans 'Observaciones' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for agenda in listado_de_eventos %}
+            <tr>
+                <td>
+                    <a class="btn btn-submit btn-outline-primary" href="javascript:;"
+                       onclick="makeClick2Call('{{ agenda.campana.pk }}', '{{ agenda.campana.type }}', '{{agenda.contacto.pk}}', '{{ agenda.telefono }}', 'agendas');"
+                       name="click2call">
+                       {{ agenda.telefono }}
+                    </a>
+                </td>
+                <td>
+                    {{ agenda.campana.nombre }}
+                </td>
+                <td>
+                    {{ agenda.contacto.obtener_datos}}
+                </td>
+                <td>
+                    {{ agenda.fecha }}
+                    <a href="{% url 'agenda_contacto_update' agenda.pk %}">
+                        <span class="icon icon-agenda"></span>
+                    </a>
+                </td>
+                <td>{{ agenda.hora}}</td>
+                <td>{{ agenda.get_tipo_agenda_display }}</td>
+                <td>{{ agenda.observaciones }}</td>
+            </tr>
+       {% empty %}
+        <tr>
+            <td colspan="5">{% trans 'No existen eventos agendados para el día de hoy' %}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock content %}

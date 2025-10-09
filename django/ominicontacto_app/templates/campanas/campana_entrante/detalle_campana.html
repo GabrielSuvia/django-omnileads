@@ -1,0 +1,55 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+
+{% load i18n %}
+
+<div class="modal-content">
+
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <div class="row">
+                        <div class="col-md-8 col-md-offset-1">
+                        <p>{% trans 'Nombre de la Campaña' %}<strong>{{ campana.nombre }}</strong></p>
+                        <p>Estado <strong>{{ campana.get_estado_display}}</strong></p>
+                            </div>
+                    </div>
+                    <hr>
+                        <div class="row">
+                            <div class="col-md-6 ">
+
+                            <p> {% trans 'Llamadas efectuadas'  %} <strong>{{ efectuadas }}</strong></p>
+
+
+                            <p> {% trans 'Llamadas Terminadas' %}<strong>{{ terminadas }}</strong></p>
+
+
+                            <p> {% trans 'Llamadas restantes estimadas' %} <strong>{{ estimadas }}</strong></p>
+
+                            </div>
+                            <div class="col-md-6">
+                                {% for statu in status %}
+                                    <p>{{statu.gbState}} {{statu.gbStateExt}} <strong>{{statu.nCalls}}</strong></p>
+                                {% endfor %}
+                            </div>
+                            </div>
+
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{% trans 'Cerrar'  %}</button>
+                </div>
+            </div>

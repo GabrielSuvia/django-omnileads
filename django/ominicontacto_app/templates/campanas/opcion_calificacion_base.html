@@ -1,0 +1,121 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "campanas/wizard_base.html" %}
+{% load i18n %}
+{% load static %}
+{% load widget_tweaks %}
+{% block extra_js %}
+    <script src="{% static 'ominicontacto/JS/ext/jquery.formset.js' %}"></script>
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/campanas/opcion_calificacion_base.js' %}"></script>
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/ext/select2.min.js' %}"></script>
+    <script>
+     /* se activa en todos los campos de selección un plugin para
+        JQuery que permite una mejor búsqueda */
+        $(document).ready(function() {
+
+            $('select.form-control').each(function() {
+                $(this).select2();});
+            $('.addFormset').click(function(){
+                $('select.form-control').each(function() {
+                $(this).select2();});
+            });
+
+        });
+    </script>
+{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/select2.min.css' %}"></link>
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/opcion-calificacion.css' %}"></link>
+{% endblock %}
+
+{% block formset_render %}
+    <input class="hidden" value="{{ wizard.form.prefix }}" id="wizard">
+    <table border="0" cellpadding="0" cellspacing="0">
+        <tbody>
+            {% if wizard.form.non_form_errors %}
+                {% for error in wizard.form.non_form_errors %}
+                    <div class="alert alert-warning">{{ error|escape }}</div>
+                {% endfor %}
+            {% endif %}
+            {% for form in wizard.form.forms %}
+                <tr
+                    {% if form.instance.usada_en_calificacion %}
+                    class="linkFormset readOnly"
+                    data-toggle="tooltip" data-placement="top"
+                    title="Esta opción de calificación ya está siendo usada en la campaña, no se permitirá su eliminación, tenga en cuenta además que si modifica su nombre esto puede causarle confusión al consultar los reportes"
+                    {% elif form.instance.es_agenda %}
+                    class="linkFormset readOnly"
+                    {% else %}
+                    class="linkFormset"
+                    {% endif %}>
+                    <td class="nombre-subcalificaciones"> {{ form.nombre_subcalificaciones }} </td>
+                    <td>
+                    {% if form.instance.pk %}
+                        {{ form.DELETE }}
+                    {% endif %}
+                    </td>
+                    <td class="nombre p-2">
+                        <label>&nbsp;</label>
+                        {{ form.nombre.errors }}
+                        {{ form.nombre|add_class:"form-control" }}
+                    </td>
+                    <td class="subcalificaciones p-2">
+                        <label>{{ form.subcalificaciones.label }}</label>
+                        {{ form.subcalificaciones|add_class:"form-control" }}
+                        {{ form.subcalificaciones.errors }}
+                    </td>
+                    <td class="tipo p-2">
+                        <label>&nbsp;</label>
+                        {{ form.tipo.errors }}
+                        {{ form.tipo|add_class:"form-control" }}
+                    </td>
+                    {% if form.formulario %}
+                        <td class="formulario p-2">
+                            <label>&nbsp;</label>
+                            {{ form.formulario.errors }}
+                            {{ form.formulario|add_class:"form-control fieldsFormset" }}
+                        </td>
+                    {% endif %}
+                    <td class="positiva p-2">
+                        {{ form.positiva.label }}
+                        {{ form.positiva.errors }}
+                        {{ form.positiva|add_class:"form-control" }}
+                    </td>
+                    <td class="p-2">
+                    {% if not form.instance.es_agenda %}
+                        {{ form.oculta.label }}
+                        {{ form.oculta.errors }}
+                        {{ form.oculta|add_class:"form-control" }}
+                    {% endif %}
+                    </td>
+                    {% if not form.instance.es_agenda %}
+                    <td class="positiva p-2">
+                        {{ form.interaccion_crm.label }}
+                        {{ form.interaccion_crm.errors }}
+                        {{ form.interaccion_crm|add_class:"form-control" }}
+                    </td>
+                    {% endif %}
+
+                    <td>{{ form.id }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {{ wizard.form.management_form }}
+{% endblock %}

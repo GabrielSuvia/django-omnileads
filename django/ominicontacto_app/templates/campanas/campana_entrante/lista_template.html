@@ -1,0 +1,67 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+
+{% block content %}
+
+     <h1>{% trans 'Templates campañas entrantes'  %}</h1>
+
+        <table class="table table-stripped">
+            <thead>
+                <tr>
+                    <th>{% trans 'Nombre' %}</th>
+                    <th>{% trans 'Acciones' %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for campana in templates_activos_entrantes %}
+                    <tr>
+                        <td width="25%">
+                            <a href="{% url 'campana_entrante_template_detail' campana.pk %}">
+                                {{ campana.nombre }}
+                            </a>
+                        </td>
+                        <td width="14%">
+                            <div class="dropdown">
+                                <button class="btn btn-light dropdown-toggle" type="button" id="dropdownActions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                {% trans 'Opciones'  %}
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownActions">
+                                    <a class="dropdown-item" href="{% url 'campana_entrante_template_create_campana' campana.pk %}">
+                                        <span class="icon icon-plus"></span>{% trans 'Crear Campaña desde Template' %}
+                                    </a>
+                                    <a class="dropdown-item" href="{% url 'campana_entrante_template_delete' campana.pk %}">
+                                        <span class="icon icon-trash"></span>{% trans 'Eliminar' %}
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5"> {% trans 'No existen templates para campañas entrantes' %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+{% endblock %}

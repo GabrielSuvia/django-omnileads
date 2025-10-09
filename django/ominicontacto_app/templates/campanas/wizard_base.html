@@ -1,0 +1,60 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block head %}
+    {{ wizard.form.media }}
+{% endblock %}
+
+{% block content %}
+    {% block nav %}
+    {% endblock %}
+    <br>
+    <div>
+        <form action="" method="post" id="wizardForm" novalidate>
+            {% csrf_token %}
+            {% block extra_content %}{% endblock %}
+            <table>
+                {{ wizard.management_form }}
+                {% if wizard.form.forms %}
+                    {% block formset_render %}
+                    {% endblock %}
+                {% else %}
+                    {% block form_render %}
+                    {% endblock %}
+                {% endif %}
+            </table>
+            {% if wizard.steps.prev %}
+                <button class="btn btn-outline-primary" name="wizard_goto_step" type="submit" value="{{ wizard.steps.first }}" formnovalidate>{% trans "first step" %}</button>
+                <button class="btn btn-outline-primary" name="wizard_goto_step" type="submit" value="{{ wizard.steps.prev }}" formnovalidate>{% trans "prev step" %}</button>
+            {% endif %}
+            <button class='btn btn-primary' type='submit' data-loading-text={% trans 'Cargando...' %}>
+                {% if wizard.steps.next %}
+                    {% trans "Paso siguiente" %}
+                {% else %}
+                    {% trans "Finalizar" %}
+                {% endif %}
+            </button>
+        </form>
+    </div>
+    {% block modal_content %}
+    {% endblock %}
+{% endblock %}

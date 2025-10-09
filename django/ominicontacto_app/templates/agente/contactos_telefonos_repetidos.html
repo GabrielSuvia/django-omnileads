@@ -1,0 +1,90 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% load static %}
+{% load compress %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <!-- Stylesheets -->
+        <link rel="stylesheet" href="{% static 'bootstrap-4.0.0/css/bootstrap.min.css' %}" >
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/jquery.dataTables.min.css' %}">
+        <link rel="stylesheet" href="{% static 'ominicontacto/CSS/main.css' %}" ></link>
+        <!-- Fonts -->
+        <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/google-font.css' %}">
+        <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/fa-solid.css' %}">
+        <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/fa-regular.css' %}">
+        <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/fontawesome.css' %}">
+        <link rel="stylesheet" href="{% static 'ominicontacto/CSS/oml-icons.css' %}">
+        {% compress js %}
+        <!-- Scripts -->
+        <script src="{% static 'jquery-2.2.4.min.js' %}"></script>
+        <script src="{% static 'bootstrap-4.0.0/js/bootstrap.bundle.min.js' %}"></script>
+        <script src="{% static 'ominicontacto/JS/ext/jquery.dataTables.min.js' %}"></script>
+        {% endcompress %}
+    </head>
+    <body>
+        {% if call_data and call_data.ics %}
+            <div><b>{% trans "Nombre Contacto ICS:" %}</b> {{ call_data.nombre_contacto_ics }}</div>
+            <div><b>{% trans "ID Contacto ICS:" %}</b> {{ call_data.id_contacto_ics }}</div>
+            <br>
+        {% endif %}
+
+        <h1>{% trans 'Contactos con este teléfono:' %}</h1>
+
+        <div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{% trans 'Teléfono' %}</th>
+                        <th>{% trans 'Datos' %}</th>
+                        <th>{% trans 'Calificar' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contacto in contactos %}
+                        <tr>
+                            <td>{{ contacto.telefono }}</td>
+                            <td>{{ contacto.datos }}</td>
+                            <td>
+                                <div class="dropdown">
+                                    {% if call_data_json %}
+                                        <a class="dropdown-item" href="{% url 'calificar_llamada_con_contacto' contacto.pk call_data_json %}">
+                                    {% else %}
+                                        <a class="dropdown-item" href="{% url 'calificacion_formulario_update_or_create' campana.pk contacto.pk %}">
+                                    {% endif %}
+                                    <span class="icon icon-pencil"></span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4">{% trans 'No existen contactos' %}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <br>
+        </div>
+    </body>
+</html>

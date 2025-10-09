@@ -1,0 +1,69 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% load i18n %}
+  <form action="" enctype="multipart/form-data" method="post">
+      {% csrf_token %}
+      <div style="position: relative;">
+          {{ contacto_form.non_field_errors }}
+          {% for hidden_field in contacto_form.hidden_fields %}
+            {{ hidden_field.errors }}
+            {{ hidden_field }}
+          {% endfor %}
+          {{ form.non_field_errors }}
+          {% for hidden_field in form.hidden_fields %}
+            {{ hidden_field.errors }}
+            {{ hidden_field }}
+          {% endfor %}
+          <table class="table">
+              {% for field in contacto_form.visible_fields %}
+                  {% if field.name != "confirmar_duplicado" %}
+                      <tr>
+                      <th>{{ field.label_tag }}</th>
+                      <td>
+                          {{ field.errors }}
+                          {{ field }}
+                          {{ field.help_text }}
+                      </td>
+                      </tr>
+                  {% endif %}
+              {% endfor %}
+              {% for field in form.visible_fields %}
+                    <tr>
+                    <th>{{ field.label_tag }}</th>
+                    <td>
+                        {{ field.errors }}
+                        {{ field }}
+                        {{ field.help_text }}
+                    </td>
+                    </tr>
+                {% endfor %}
+        </table>
+          <!-- {{form.as_table}} -->
+      </div>
+      <hr>
+      {% if contacto_form.confirmar_duplicado in contacto_form.hidden_fields %}
+          {{ contacto_form.confirmar_duplicado }}
+      {% else %}
+          {{ contacto_form.confirmar_duplicado.label_tag }}{{ contacto_form.confirmar_duplicado }}
+          <hr>
+      {% endif %}
+      <button type="submit"  class="btn btn-primary">
+          {% trans 'Guardar'  %}
+      </button>
+  </form>

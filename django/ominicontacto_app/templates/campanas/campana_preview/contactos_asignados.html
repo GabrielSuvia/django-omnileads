@@ -1,0 +1,116 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/jquery.dataTables.min.css' %}">
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/select.dataTables.min.css' %}">
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/reservar-liberar-contactos-preview.css' %}">
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/select2.min.css' %}"></link>
+{% endblock %}
+
+{% block head_js %}
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/ext/jquery.dataTables.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'JS/ext/dataTables.select.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/campanas/campana_preview/contactos_asignados.js' %}"></script>
+{% endblock %}
+{% block extra_js %}
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/ext/select2.min.js' %}"></script>
+    <script>
+     /* se activa en todos los campos de selección un plugin para
+        JQuery que permite una mejor búsqueda */
+        $(document).ready(function() {
+            $('select.form-control').each(function() {
+                $(this).select2();});
+        });
+    </script>
+{% endblock %}}
+
+{% block content %}
+    <form id='liberar_reservar_form' action="{% url 'liberar_reservar_contacto_asignado' %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="campana_id" id="campana_id" value="{{ campana.id }}">
+    </form>
+    <div class="row">
+        <div class="col-md-12">
+            <h1>{% trans "Reservar o liberar Contactos de la Campaña" %}: {{ campana.nombre }}</h1>
+        </div>
+    </div>
+    <br>
+        <div class="col col-xs-12 col-md-12 col-lg-12 filter_agent">
+            <div class="col-md-2"><label>{% trans 'Filtrar por agente' %}</label></div>
+            <div class="col-md-2"><select class="form-control" id="filter_agent">
+                    <option value="" selected="selected" label="------------"></option>
+                    {% for agente in agentes %}
+                        <option value="{{agente.id}}">{{agente}}</option>
+                    {% endfor %}
+                </select></div>
+        </div>
+    <br>
+    <div class="row">
+        <div class="col-md-8">
+            <table class="table" id="contactoAsignadoTable">
+                <div class="hidden" id="alertContacto">{% trans "* Tiene que seleccionar minimo 1 contacto" %}</div>
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" class="selectAll" name="selectAll" value="all"></th>
+                        <th>{% trans "Id" %}</th>
+                        <th>{% trans "Telefono" %}</th>
+                        <th>{% trans "Agente" %}</th>
+                        <th>{% trans "Estado" %}</th>
+                        <th>{% trans "Id Externo" %}</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <div class="col-md-4" id="alignTableContacto">
+            <table class="table" id="reservarLiberarContactoTable">
+                <div class="hidden" id="alertAgente">{% trans "* Tiene que seleccionar un Agente" %}</div>
+                <thead>
+                    <tr>
+                        <th>{% trans "Agentes" %}</th>
+                        <th>{% trans "Acciones" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>
+                            <select id="agentes" class="form-control">
+                                <option value="" selected="selected" label="------------">------------</option>
+                                {% for agente in agentes %}
+                                    <option value="{{agente.id}}">{{agente}}</option>
+                                {% endfor %}
+                            </select>   
+                        </th>
+                        <th>
+                            <a class="dropdown-item" href="#" id="reservar" onclick="liberar_reservar_contacto()">
+                                <span class="icon icon-pencil"></span>{% trans "Reservar" %}
+                             </a>
+                            <a class="dropdown-item" href="#" id="liberar" onclick="liberar_reservar_contacto()">
+                                <span class="icon icon-pencil"></span>{% trans "Liberar" %}
+                            </a>
+                        </th>
+                    </tr>    
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

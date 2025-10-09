@@ -1,0 +1,214 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "campanas/wizard_base.html" %}
+{% load i18n %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/formulario.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'configuracion_telefonia_app/JS/rutas-entrantes-lib.js' %}"></script>
+    <script src="{% static 'ominicontacto/JS/campanas/campana_entrante/create_update_queue.js' %}"></script>
+{% endblock %}
+
+{% block nav %}
+    <h1>{% trans 'Campaña Entrante: Datos de Cola' %}</h1>
+
+    <ul class="nav nav-indicators">
+        <li class="disabled"><a>{% trans 'Campaña' %}</a></li>
+        <li class="active"><a>{% trans 'Datos básicos de la cola' %}</a></li>
+        {% if whatsapp_habilitado %}
+            <li class="disabled"><a>{% trans 'Configuración de Whatsapp' %}</a></li>
+        {% endif %}
+        <li class="disabled"><a>{% trans 'Opciones de calificación' %}</a></li>
+        {% if custom_basedatoscontacto %}
+            <li class="disabled"><a>{% trans 'Base Datos de Contactos' %}</a></li>
+        {% endif %}
+        {% if interaccion_crm %}
+            <li class="disabled"><a>{% trans 'Interacción con Sitio Externo' %}</a></li>
+        {% endif %}
+        {% if not es_template and create %}
+            <li class="disabled"><a>{% trans 'Dar permiso a supervisores' %}</a></li>
+            <li class="disabled"><a>{% trans 'Agregar agentes' %}</a></li>
+        {% endif %}
+    </ul>
+{% endblock %}
+
+{% block form_render %}
+    {{ form.non_field_errors }}
+    {{ form.name.errors }}
+    {{ form.name }}
+    {{ form.campana.errors }}
+    {{ form.campana }}
+
+    <div class="row">
+        <h1 id="text_line">{% trans 'Parámetros de la campaña' %}</h1>
+    </div>
+    <div class="form-row">
+        <div class="col-md-3">
+            <label for="{{ form.maxlen.id_for_label }}">{% trans 'Cantidad Max de llamadas:' %}</label>
+            {{ form.maxlen }}
+            {{ form.maxlen.errors }}
+        </div>
+        <div class="col-md-2">
+            <label>{% trans 'Grabar llamados:' %}</label>
+            {{ form.auto_grabacion }}
+            {{ form.auto_grabacion.errors }}
+        </div>
+        <div class="col-md-3">
+            <label for="{{ form.weight.id_for_label }}">{% trans 'Importancia de campaña:' %}</label>
+            {{ form.weight }}
+            {{ form.weight.errors }}
+        </div>
+
+        <div class="col-md-4">
+            <label for="{{ form.strategy.id_for_label }}">{% trans 'Estrategia de distribución:' %}</label>
+            {{ form.strategy }}
+            {{ form.strategy.errors }}
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-3">
+            <label>{% trans 'Musica de espera:' %}</label>
+            {{ form.musiconhold }}
+            {{ form.musiconhold.errors }}
+        </div>
+        <div class="col-md-3">
+            <label for="{{ form.wait.id_for_label }}">{% trans 'Tiempo de espera en cola:' %}</label>
+            {{ form.wait }}
+            {{ form.wait.errors }}
+            <small class="form-text text-muted">
+                {{ form.wait.help_text }}
+            </small>
+        </div>
+        <div class="col-md-3">
+            <label for="{{ form.ivr_breakdown.id_for_label }}">{% trans 'IVR de escape:' %}</label>
+            {{ form.ivr_breakdown }}
+            {{ form.ivr_breakdown.errors }}
+        </div>
+        <div class="col-md-3">
+            <label for="{{ form.servicelevel.id_for_label }}">{% trans 'Nivel de Servicio:' %}</label>
+            {{ form.servicelevel }}
+            {{ form.servicelevel.errors }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <label><h3>{% trans 'Destino en caso de timeout:' %}</h3></label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            <label for="{{ form.tipo_destino_failover.id_for_label }}">{% trans 'Tipo destino:' %}</label>
+            {{ form.tipo_destino_failover }}
+            {{ form.tipo_destino_failover.errors }}
+        </div>
+        <div class="col-md-3">
+            <label for="{{ form.destino_failover.id_for_label }}">{% trans 'Destino:' %}</label>
+            {{ form.destino_failover }}
+            {{ form.destino_failover.errors }}
+        </div>
+        <div class="col-md-3">
+            <label for="">{% trans 'Anuncio de entrada para el agente:'%}</label>
+            {{ form.audio_previo_conexion_llamada }}
+            {{ audio_previo_conexion_llamada.errors }}
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="row">
+                <h1 id="text_line">{% trans 'Anuncios para llamantes' %}</h1>
+            </div>
+            <div class="form-row">
+                <div class="col-md-6">
+                    <label for="{{ form.audio_de_ingreso.id_for_label }}">{% trans 'Audio de ingreso:' %}</label>
+                    {{ form.audio_de_ingreso }}
+                    {{ form.audio_de_ingreso.errors }}
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.announce_holdtime.id_for_label }}">{% trans 'Anunciar tiempo promedio espera:' %}</label>
+                    {{ form.announce_holdtime }}
+                    {{ form.announce_holdtime.errors }}
+                </div>
+                <div class="col-md-5">
+                    <label for="{{ form.announce_position.id_for_label }}">{% trans 'Anunciar Posición:'%}</label>
+                    {{ form.announce_position }}
+                    {{ form.announce_position.errors }}
+                </div>
+                <div class="col-md-7">
+                    <label for="{{ form.wait_announce_frequency.id_for_label}}">{% trans 'Frecuencia de anuncios de espera/posición' %}</label>
+                    {{form.wait_announce_frequency}}
+                    {{form.wait_announce_frequency.errors}}
+                    <small class="form-text text-muted">
+                        {{ form.wait_announce_frequency.help_text }}
+                    </small>
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.audios.id_for_label }}">{% trans 'Anuncio periódico:' %}</label>
+                    {{ form.audios|add_class:"form-control" }}
+                    {{ form.audios.errors }}
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.announce_frequency.id_for_label }}">{% trans 'Frecuencia de anuncio periodico:' %}</label>
+                    {{ form.announce_frequency }}
+                    {{ form.announce_frequency.errors }}
+                    <small class="form-text text-muted">
+                        {{ form.announce_frequency.help_text }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="row">
+                <h1 id="text_line">{% trans 'Parámetros de agentes' %}</h1>
+            </div>
+            <div class="form-row">
+                <div class="col-md-6">
+                    <label for="{{ form.timeout.id_for_label }}">{% trans 'Tiempo de Ring:' %}</label>
+                    {{ form.timeout }}
+                    <small class="form-text text-muted">
+                        {{ form.timeout.help_text }}
+                    </small>
+                    {{ form.timeout.errors }}
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.retry.id_for_label }}">{% trans 'Tiempo de Reintento:' %}</label>
+                    {{ form.retry }}
+                    {{ form.retry.errors }}
+                    <small class="form-text text-muted">
+                        {{ form.retry.help_text }}
+                    </small>
+                </div>
+                <div class="col-md-6" title="{% trans 'Se recomienda un valor mayor o igual a 2' %}">
+                    <label for="{{ form.wrapuptime.id_for_label }}">{% trans 'Tiempo de descanso entre llamadas:' %}</label>
+                    {{ form.wrapuptime }}
+                    {{ form.wrapuptime.errors }}
+                    <small class="form-text text-muted">
+                        {{ form.wrapuptime.help_text }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

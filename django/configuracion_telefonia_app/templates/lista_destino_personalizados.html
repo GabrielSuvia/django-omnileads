@@ -1,0 +1,98 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+    <h1>{% trans 'Destino personalizado' %}</h1>
+    <div class="row">
+        <div class="column-md-5">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{% trans 'ID' %}</th>
+                        <th colspan="2">{% trans 'Nombre' %}</th>
+                        <th colspan="2">{% trans 'Tipo' %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for destino_personalizado in destinos_personalizados %}
+                        <tr>
+                            <td>{{ destino_personalizado.id }}</td>
+                            <td><a href="{% url 'editar_destino_personalizado' destino_personalizado.id %}">{{ destino_personalizado.nombre }}</a></td>
+                            <td>{{ destino_personalizado.get_tipo_display }}</td>
+                            <td>
+                                <a class="dropdown-item" href="{% url 'eliminar_destino_personalizado' destino_personalizado.pk %}">
+                                    <span class="icon icon-trash"></span>{% trans 'Eliminar' %}
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td>{% trans 'No hay Destinos Personalizados configurados' %}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <a class="btn btn-light btn-sm" href="{% url 'crear_destino_personalizado' %}" >{% trans 'Agregar Destinos Personalizados' %}</a>
+    {% if is_paginated %}
+        <br>
+        <br>
+        <nav aria-label="Page navigation">
+            <ul class="pagination pagination-centered">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                      <a class="page-link" aria-label="First" href="{% url 'lista_destinos_personalizados' page=1 %}">
+                        <span aria-hidden="true">&laquo;</span>
+                        <span class="sr-only">{% trans 'Principio' %}</span>
+                      </a>
+                    </li>
+                    <li class="page-item">
+                      <a class="page-link" aria-label="Previous" href="{% url 'lista_destinos_personalizados' page=page_obj.previous_page_number%}">
+                        <span aria-hidden="true">&lt;</span>
+                        <span class="sr-only">{% trans 'Anterior' %}</span>
+                      </a>
+                    </li>
+                {% endif %}
+                {% for i in pages %}
+                    <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                      <a class="page-link" href="{% url 'lista_destinos_personalizados' page=i %}"> {{i}} </a>
+                    </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                      <a class="page-link" aria-label="Next" href="{% url 'lista_destinos_personalizados' page=page_obj.next_page_number %}">
+                        <span aria-hidden="true">&gt;</span>
+                        <span class="sr-only">{% trans 'Siguiente' %}</span>
+                      </a>
+                    </li>
+                    <li class="page-item">
+                      <a class="page-link" aria-label="Last" href="{% url 'lista_destinos_personalizados' page=page_obj.paginator.num_pages %}">
+                        <span aria-hidden="true">&raquo;</span>
+                        <span class="sr-only">{% trans 'Final' %}</span>
+                      </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+{% endblock %}

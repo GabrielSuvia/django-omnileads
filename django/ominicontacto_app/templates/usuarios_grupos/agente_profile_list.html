@@ -1,0 +1,138 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block head_js %}
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/supervision/agente_profile_list.js' %}"></script>
+    <script src="{% static 'ominicontacto/JS/ext/jquery.dataTables.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/user/user_list_delete.js' %}"></script>
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/jquery.dataTables.min.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="form-row">
+    <div class="col-md-4">
+        <h1>{% trans 'Agentes' %}</h1>
+    </div>
+    <div class="col-md-1">
+        <label for="group-filter">{% trans 'Grupo' %}</label>
+    </div>
+    <div class="col-md-4">
+        <select class="form-control" name="group-filter" id="group-filter">
+            <option value="">{% trans 'Todos' %}</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <form id="user-bulk-delete" class="d-inline-block" method="POST" action="{% url 'user_bulk_delete' %}">
+            {% csrf_token %}  
+            <input type="hidden" name="_next" value="{{ request.get_full_path }}" />
+            <button type="submit" class="btn btn-danger mb-2">
+                {% trans 'Eliminar usuarios' %}
+            </button>
+        </form>
+    </div>
+</div>
+
+<table class="table" id="agents-table">
+    <thead>
+        <tr>
+            <th>
+                <input type="checkbox" id="_selected_item">
+            </th>
+            <th>{% trans 'id' %}</th>
+            <th>{% trans 'nombre del agente' %}</th>
+            <th>{% trans 'sip_extension' %}</th>
+            <th>{% trans 'grupo' %}</th>
+            <th>{% trans 'campañas' %}</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for agente in object_list%}
+        <tr id="{{agente.user}}">
+            <td>
+                {% if user.id != agente.user.id %}
+                <input type="checkbox" name="_selected_item" value="{{ agente.user.id }}">
+                {% endif %}
+            </td>
+            <td>{{ agente.id }}</td>
+            <td>{{ agente.user.first_name}} {{ agente.user.last_name}}</td>
+            <td>{{ agente.sip_extension }}</td>
+            <td>{{ agente.grupo}}</td>
+            <td>
+                <a class="btn btn-light btn-sm" href="#" onclick="obtener_campanas_agente({{ agente.id }})" >
+                    {% trans 'Mostrar Campañas' %}
+                </a>
+            </td>
+            <td>
+                {% if agente.is_inactive %}
+                {% trans 'Agente Inactivo' %}
+                <a class="btn btn-light btn-sm"  href="{% url 'agente_activar' agente.pk %}" >
+                    {% trans 'activar' %}
+                </a>
+                {% else %}
+                {% trans 'Agente Activo' %}
+                <a class="btn btn-light btn-sm" href="{% url 'agente_desactivar' agente.pk %}" >
+                    {% trans 'desactivar' %}
+                </a>
+                {% endif %}
+            </td>
+        </tr>
+   {% empty %}
+    <tr>
+        <td>{% trans 'No existen agentes' %}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+<div class="modal" id="campanasAgenteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title">{% trans 'Campañas' %}</h1>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                  <table class="table" id="campanasAgenteTable">
+                      <thead>
+                          <tr>
+                              <th>{% trans 'ID' %}</th>
+                              <th>{% trans 'Nombre' %}</th>
+                              <th>{% trans 'Objetivo' %}</th>
+                          </tr>
+                      </thead>
+                  </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">{% trans 'Cerrar'  %}</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+
+{% endblock %}

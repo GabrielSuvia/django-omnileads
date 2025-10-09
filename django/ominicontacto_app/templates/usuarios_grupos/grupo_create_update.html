@@ -1,0 +1,160 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block head_js %}
+  <script type="text/javascript" src="{% static 'ominicontacto/JS/supervision/grupo.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<!-- Button back -->
+<nav>
+    <ul class="pagination">
+        <li class="page-item">
+            <a class="page-link" href="{% url 'grupo_list' %}" >
+                <span aria-hidden="true">&laquo;</span>
+                {% trans 'Atras' %}
+            </a>
+        </li>
+    </ul>
+</nav>
+<h1>{% trans 'Nuevo grupo de agentes'%}</h1>
+<form action = "" method = "post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <div class="form-row">
+        <div class="col-sm-12 col-md-4 col-lg-4 col-xl-4">
+            {{ form.nombre.label_tag }} {{ form.nombre }}
+            {{ form.nombre.errors }}
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-4 col-xl-4">
+            {{ form.auto_unpause.label_tag }} {{ form.auto_unpause }}
+            {{ form.auto_unpause.errors }}
+            <small class="form-text text-muted">
+                {{ form.auto_unpause.help_text }}
+            </small>
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-4 col-xl-4">
+            {{ form.conjunto_de_pausa.label_tag }} {{ form.conjunto_de_pausa }}
+            {{ form.conjunto_de_pausa.errors }}
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.auto_attend_inbound.label_tag }} {{ form.auto_attend_inbound }}
+            {{ form.auto_attend_inbound.errors }}
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.auto_attend_dialer.label_tag }} {{ form.auto_attend_dialer }}
+            {{ form.auto_attend_dialer.errors }}
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.obligar_calificacion.label_tag}} {{ form.obligar_calificacion}} 
+            {{ form.obligar_calificacion.errors }}
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.obligar_despausa.label_tag}}{{ form.obligar_despausa}}
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.call_off_camp.label_tag}} {{ form.call_off_camp}}
+            {{ form.call_off_camp.errors }}
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.acceso_grabaciones_agente.label_tag }} {{ form.acceso_grabaciones_agente }}
+            {{ form.acceso_grabaciones_agente.errors }}
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.acceso_dashboard_agente.label_tag }} {{ form.acceso_dashboard_agente }}
+            {{ form.acceso_dashboard_agente.errors }}
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.on_hold.label_tag }} {{ form.on_hold }}
+            {{ form.on_hold.errors }}
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.show_console_timers.label_tag }} {{ form.show_console_timers }}
+            {{ form.show_console_timers.errors }}
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.limitar_agendas_personales.label_tag }} {{ form.limitar_agendas_personales }} 
+            {{form.cantidad_agendas_personales}}
+            <i class="fa fa-info-circle" aria-hidden="true" data-toggle="tooltip" title="{{form.cantidad_agendas_personales.help_text}}"></i>
+            {{ form.cantidad_agendas_personales.errors }}
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.limitar_agendas_personales_en_dias.label_tag }} {{ form.limitar_agendas_personales_en_dias }} 
+            {{form.tiempo_maximo_para_agendar}}
+            <i class="fa fa-info-circle" aria-hidden="true" data-toggle="tooltip" title="{{form.tiempo_maximo_para_agendar.help_text}}"></i>
+            {{ form.tiempo_maximo_para_agendar.errors }}
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.acceso_contactos_agente.label_tag }} {{ form.acceso_contactos_agente }}
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.acceso_agendas_agente.label_tag }} {{ form.acceso_agendas_agente }}
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.acceso_calificaciones_agente.label_tag }} {{ form.acceso_calificaciones_agente }}
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.acceso_campanas_preview_agente.label_tag }} {{ form.acceso_campanas_preview_agente }}
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.whatsapp_habilitado.label_tag }} {{ form.whatsapp_habilitado }}
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.acceso_cambiar_contrasena_agente.label_tag }} {{ form.acceso_cambiar_contrasena_agente }}
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.restringir_tipo_llamadas_manuales.label_tag }} {{ form.restringir_tipo_llamadas_manuales }}
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.permitir_llamadas_manuales_a_manuales.label_tag }} {{ form.permitir_llamadas_manuales_a_manuales }}
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.permitir_llamadas_manuales_a_dialer.label_tag }} {{ form.permitir_llamadas_manuales_a_dialer }}
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.permitir_llamadas_manuales_a_entrante.label_tag }} {{ form.permitir_llamadas_manuales_a_entrante }}
+        </div>
+        <div class="col-sm-12 col-md-4 col-lg-3 col-xl-3">
+            {{ form.permitir_llamadas_manuales_a_preview.label_tag }} {{ form.permitir_llamadas_manuales_a_preview }}
+        </div>
+    </div>
+
+    <button type="submit" id="id_registrar" class="btn btn-primary">
+        {% trans 'Guardar' %}
+    </button>
+</form>
+
+{% endblock %}

@@ -1,0 +1,13 @@
+#alignTableContacto{
+	margin-top: 30px;
+	padding-left: 0;
+}
+#alertContacto, #alertAgente{
+	color: red;
+}
+.select-checkbox{
+	width: 2px;
+}
+.filter_agent{
+	display: flex;
+}

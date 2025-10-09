@@ -1,0 +1,101 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+
+            <ul class="nav nav-tabs">
+                <li><a href="{% url 'campana_manual_update' campana.pk %}" >{% trans 'Campaña' %}</a></li>
+                <li class="active"><a>Cola</a></li>
+            </ul>
+            <br>
+    <div class="col-md-4">
+                {% if object.name %}
+                    <p>{% trans 'Modificar datos de la cola' %}<strong>{{ object.name }}</strong></p>
+                {% endif %}
+<form action="" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {{ form.campana }} {{form.name }}
+    <div class="form-group row">
+        {{ form.maxlen.errors }}
+        <label class="col-sm-3 control-label" for="{{ form.maxlen.id_for_label }}">{% trans 'Cantidad Max de llamadas:' %}</label>
+        <div class="col-sm-3">
+              {{ form.maxlen }}
+        </div>
+    </div>
+    <div class="form-group row">
+        {{ form.wrapuptime.errors }}
+        <label class="col-sm-3 control-label" for="{{ form.wrapuptime.id_for_label }}">{% trans 'Tiempo de descanso entre llamadas:' %}</label>
+        <div class="col-sm-3">
+              {{ form.wrapuptime }}
+        </div>
+    </div>
+    <div class="form-group row">
+        {{ form.servicelevel.errors }}
+        <label class="col-sm-3 control-label" for="{{ form.servicelevel.id_for_label }}">{% trans 'Nivel de Servicio:' %}</label>
+        <div class="col-sm-3">
+              {{ form.servicelevel }}
+        </div>
+    </div>
+    <div class="form-group row">
+        {{ form.strategy.errors }}
+        <label class="col-sm-3 control-label" for="{{ form.strategy.id_for_label }}">{% trans 'Estrategia de distribución:' %}</label>
+        <div class="col-sm-6">
+              {{ form.strategy }}
+        </div>
+    </div>
+    <div class="form-group row">
+        {{ form.weight.errors }}
+        <label class="col-sm-3 control-label" for="{{ form.weight.id_for_label }}">{% trans 'Importancia de campaña:' %}</label>
+        <div class="col-sm-3">
+              {{ form.weight }}
+        </div>
+    </div>
+    <div class="form-group row">
+        {{ form.wait.errors }}
+        <label class="col-sm-3 control-label" for="{{ form.wait.id_for_label }}">{% trans 'Tiempo de espera en cola:' %}</label>
+        <div class="col-sm-3">
+              {{ form.wait }}
+        </div>
+    </div>
+    <div class="form-group row">
+        {{ form.auto_grabacion.errors }}
+        <label class="col-sm-3 control-label">{% trans 'Grabar llamados:' %}</label>
+        <div class="col-sm-3">
+              {{ form.auto_grabacion }}
+        </div>
+    </div>
+    <div class="form-group row">
+        {{ form.detectar_contestadores.errors }}
+        <label class="col-sm-4 control-label" for="{{ form.detectar_contestadores.id_for_label }}">{% trans 'Detectar contestadores:' %}</label>
+        <div class="col-sm-3">
+            {{ form.detectar_contestadores }}
+        </div>
+    </div>
+    </br>
+    <button type="submit" id="id_guardar" class="btn btn-success btn-lg">
+        {% trans 'Finalizar' %}
+    </button>
+</form>
+
+
+{% endblock %}

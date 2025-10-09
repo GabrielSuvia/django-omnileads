@@ -1,0 +1,37 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends 'base_create_update_form.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block extra_js %}
+    <script type="text/javascript" src="{% static 'configuracion_telefonia_app/JS/progreso_audio.js' %}"></script>
+{% endblock %}
+
+{% block titles %}
+    <div class="row">
+        <div class="col-md-6">
+            <h1>{% blocktranslate %} Adicionar audios de {{ ASTERISK_TM }} {% endblocktranslate %}</h1>
+        </div>
+        <div class="col-md-6"><b>{% trans 'Instalados:' %}</b> {{ form.idiomas_instalados|join:"," }}</div>
+    </div>
+    <div class="row">
+        <img class="hidden" src="{% static 'configuracion_telefonia_app/img/wait.gif' %}" id="waitGif">
+    </div>
+{% endblock %}

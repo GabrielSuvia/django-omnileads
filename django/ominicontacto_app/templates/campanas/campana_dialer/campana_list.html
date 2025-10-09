@@ -1,0 +1,121 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+{% load oml_permissions %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/jquery.dataTables.min.css' %}">
+{% endblock %}
+
+{% block head_js %}
+<script type="text/javascript" src="{% static 'ominicontacto/JS/ext/jquery.dataTables.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/campanas/datatables.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/csrf.js' %}"></script>
+<script type="text/javascript" src="{% static 'JS/ext/reconnecting-websocket-iife.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/campanas/campana_dialer/campana_list.js' %}"></script>
+<script type="text/javascript" src="{% static 'django_js_reverse/js/reverse.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/supervision/omlAPI.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+<h1>{% trans 'Campañas dialer' %}</h1>
+
+<div>
+    <form role="form" id="option_dialer" action="" method="POST">
+        {% csrf_token %}
+        <input type="hidden" id="campana_pk" name="campana_pk">
+    </form>
+    <form id="form_estados_campanas" role="form" method="post">
+        {% csrf_token %}
+        <input type="hidden" id="campana_id" name="campana_id">
+    </form>
+    {{ wombat_habilitado|json_script:"wombat_enabled" }}
+    {{ datos_campanas|json_script:"campaigns_data" }}
+
+    <h2>{% trans 'Campañas Activas' %} <span style="color:red;">- {% trans 'Canales en uso' %}: {{ canales_en_uso }}</span></h2>
+    {% if wombat_habilitado and user|has_oml_permission:'api_restart_wombat' and wombat_reload_enabled %}
+        <input type="hidden" id="wombat_state" name="wombat_state" value="{{ wombat_state }}"/>
+        <h2>{% trans 'Estado  Marcador: ' %}
+            <span id="wombat_state_label"> </span>
+            <span id="wombat_uptime" style="color:grey;font-size: 0.9rem;">{%if wombat_uptime %} ({{ wombat_uptime }}) {% endif %}</span>
+        </h2>
+        <input type="button" id="submit_restart_wombat" name="refrescar" class="btn btn-outline-primary btn-sm" value="{% trans 'Refrescar' %}"/>
+        <input type="button" id="submit_sync_wombat" name="sync" class="btn btn-outline-primary btn-sm" value="{% trans 'Status' %}"/>
+        <input type="button" id="submit_stop_wombat" name="sync" class="btn btn-outline-primary btn-sm" value="{% trans 'Stop' %}"/>
+        <input type="button" id="submit_start_wombat" name="sync" class="btn btn-outline-primary btn-sm" value="{% trans 'Start' %}"/>
+    {% endif %}
+    {% if wombat_habilitado %}
+      <a value="{% url 'campana_dialer_finaliza_activas' %}" class="btn btn-light btn-sm float-right action_for_campaign">
+        {% trans 'Finalizar campañas sin contactos por discar' %}
+      </a>
+    {% endif %}
+    </br>
+
+    </br>
+      {% include "campanas/campana_dialer/campana_list_table.html" with campanas=activas state=2 %}
+    <br>
+
+    <h2>{% trans 'Campañas Pausadas' %}</h2>
+      {% include "campanas/campana_dialer/campana_list_table.html" with campanas=pausadas state=5 %}
+    <br>
+
+    <h2>{% trans 'Campañas Inactivas' %}</h2>
+      {% include "campanas/campana_dialer/campana_list_table.html" with campanas=inactivas state=6 %}
+    <br>
+
+    <h2>{% trans 'Campañas Finalizadas' %}</h2>
+      {% include "campanas/campana_dialer/campana_list_table.html" with campanas=finalizadas state=3 %}
+    <br>
+
+    <h2>{% trans 'Campañas Eliminadas' %}</h2>
+    <a href="#" class="btn btn-light btn-sm" onclick="mostrar_campanas_dialer_ocultas()" >
+        {% trans 'Mostrar ocultas' %}
+    </a>
+    <hr>
+      {% include "campanas/campana_dialer/campana_list_table.html" with campanas=eliminadas state=4 %}
+
+    <div class="modal fade" id="myMapModal">
+        <div class="modal-dialog" id="modal_ventana">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 id="address" class="modal-title"></h1>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="row">
+                            <div id="map-canvas" class=""></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{% trans 'Cerrar' %}</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+
+
+</div>
+{% endblock %}

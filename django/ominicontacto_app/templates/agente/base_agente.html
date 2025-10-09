@@ -1,0 +1,1113 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% load static %}
+{% load compress %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset="utf-8">
+    <title>{{ OMNILEADS_TM }}</title>
+    <link rel="shortcut icon" href="{% static 'ominicontacto/Img/favicon.png' %}">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{% static 'bootstrap-4.0.0/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/select2.min.css' %}">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/jquery.dataTables.min.css' %}">
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/bootstrap-datetimepicker.min.css' %}">
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/main.css' %}">
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/jquery.growl.css' %}">
+    <!-- Fonts -->
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/google-font.css' %}">
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/fa-solid.css' %}">
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/fa-regular.css' %}">
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/fontawesome.css' %}">
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/oml-icons.css' %}">
+    <!-- Sweetalert2 -->
+    <link rel="stylesheet" href="{% static 'CSS/ext/sweetalert2.min.css' %}">
+    <!-- Scripts -->
+    <script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
+    {% compress js %}
+    <script src="{% static 'jquery-2.2.4.min.js' %}"></script>
+    <script src="{% static 'bootstrap-4.0.0/js/bootstrap.bundle.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/csrf.js' %}"></script>
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/ext/daterangepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/ranges-datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/config_datetimepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'django_js_reverse/js/reverse.js' %}"></script>
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/ext/jquery.growl.js' %}"></script>
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/ext/select2.min.js' %}"></script>
+    {% endcompress %}
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/ext/jquery.dataTables.min.js' %}"></script>
+    <!-- librerías opcionales que activan el soporte de HTML5 para IE8 -->
+    <!--[if lt IE 9]>
+        <script src="{% static 'ominicontacto/JS/ext/html5shiv-3.7.0.js' %}"></script>
+        <script src="{% static 'ominicontacto/JS/ext/respond-1.4.2.min.js' %}"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+
+  <!-- Configs -->
+    <input type="hidden" value="{{ agente_profile.id }}" id="idagt"/>
+    <input type="hidden" value="{{ sip_usuario }}" id="sipExt"/>
+    <input value="{{ sip_password }}" id="sipSec" type="hidden"/>
+    <input value="{{ video_domain }}" id="video_domain" type="hidden"/>
+    <input value="{{ max_session_age }}" id="max_session_age" type="hidden"/>
+    <input value="{{ agente_profile.grupo.obligar_calificacion }}" id="obligar-calificacion" type="hidden"/>
+    <input type="hidden" value="{{ agente_profile.grupo.auto_attend_inbound }}" id="auto_attend_IN"/>
+    <input type="hidden" value="{{ agente_profile.grupo.auto_attend_dialer }}" id="auto_attend_DIALER"/>
+    <input type="hidden" value="{{ agente_profile.grupo.auto_unpause }}" id="auto_unpause"/>
+    <input type="hidden" value="{{ agente_profile.grupo.call_off_camp }}" id="call_off_camp">
+    <input type="hidden" value="{{ agente_profile.grupo.on_hold }}" id="on_hold">
+    <input value="{{ dtmf_duration }}" id="dtmf_duration" type="hidden"/>
+    <input value="{{ dtmf_inter_tone_gap }}" id="dtmf_inter_tone_gap" type="hidden"/>
+
+  <!-- Hidden Data -->
+    <input type="hidden" value="{{ fechas_agendas_json }}" id='agendas_dates_json'>
+
+  <!-- Constants -->
+    <input type="hidden" value="{{ ASTERISK_TM }}" id="asterisk_tm">
+
+<!-- Modal de Pausa -->
+<div class="modal fade" id="modalPause" role="dialog">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title">{% trans 'Tomar Pausa' %}</h1>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <select class="form-control" id="pauseType">
+                    {% for pausa in pausas %}
+                        <option id="" value="{{ pausa.id }},{{ pausa.name }},{{ pausa.timeToEndPause }}">{{ pausa.name }}</option>
+                    {% endfor %}
+                </select>
+                <div class="mt-2">
+                    <small id="showPauseTimer"></small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="setPause" class="btn btn-primary">{% trans 'Iniciar' %}</button>
+            </div>
+        </div>
+    </div>
+</div> <!-- FIN Pausa -->
+
+<!-- modal que se muestra cuando entra una llamada -->
+<div id="modalReceiveCalls" data-backdrop="static" data-keyboard="false" class="modal fade bs-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <em><b class="tituloLlamEntrante">{% trans 'Llamada Entrante' %}</b></em>
+                <button type="button" id='doNotAnswerX' class="close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h4 class="cuerpoLlamEntrante">
+                <span class="label label-info">{% trans 'De:' %}</span>
+                <label name="callerid" id="callerid"></label><br>
+                <span class="label label-info">{% trans 'Teléfono:' %}</span>
+                <label name="numberAni" id="numberAni"></label><br>
+                <span class="label label-info">{% trans 'Info extra:' %}</span>
+                <label name="extraInfo" id="extraInfo">.....</label>
+                <span class="label label-info">{% trans 'Campaña:' %}</span>
+                <label name="omlcampname" id="omlcampname"></label><br>
+                <span class="label label-info">{% trans 'Número:' %}</span>
+                <label name="omldid" id="omldid"></label><br>
+                <span class="label label-info">{% trans 'Ruta Entrante:' %}</span>
+                <label name="omlinroutename" id="omlinroutename"></label><br>
+                </h4>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="answer" class="btn btn-success btn-sm">{% trans 'Responder' %}</button>
+                <button type="button" id="doNotAnswer" class="btn btn-danger btn-sm">{% trans 'Rechazar' %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal que se despliega al dar clic en Marcar Llamada -->
+<div id="modalSignCall" class="modal fade bs-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">{% trans 'Marcación de Llamada' %}</h2>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="idCamp"/>
+                <textarea id="SignDescription" placeholder="Motivo de marca" class="form-control"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="SaveSignedCall" class="btn btn-primary">{% trans 'Guardar' %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- modal que se muestra cuando quiere realizarse una llamada manual -->
+<div id="modalSelectCmp" class="modal fade bs-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">{% trans 'Llam.  Manual a Campaña' %}</h2>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <select class="form-control" id="cmpList">
+                    {% for campana in user.get_agente_profile.get_campanas_habilitadas_para_llamada_manual %}
+                    <option value = "{{ campana.pk }}"
+                    campana_type="{{ campana.type }}"> {{ campana.nombre }} </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="SelectCamp" class="btn btn-primary">{% trans 'Ok' %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal que se despliega al dar clic en Marcar Llamada Fuera de Campaña -->
+<div id="modalCallOffCamp" class="modal">
+    <div class="modal-dialog modal-sm" style="max-width:400px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">{% trans 'Llamada fuera de Campaña' %}</h2>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-footer">
+                <select class="form-control" id="agente_off_camp">
+                    {% for agente in agentes %}
+                        <option value = "{{ agente.id }}"> {{ agente.user.get_full_name }} </option>
+                    {% endfor %}
+                </select>
+                <button type="button" id="call_agent" class="btn btn-primary">{% trans 'Llamar Agente' %}</button>
+            </div>
+            <div class="modal-footer">
+                <label for="number_off_camp" ></label>
+                <input type="text" id="phone_off_camp" id="phone_off_camp" class="form-control"/>
+                <button type="button" id="call_phone_off_campaign" class="btn btn-primary">{% trans 'Llamar numero' %}</button>
+            </div>
+            <div class="modal-footer">
+                <select class="form-control" id="lista_rapida_off_camp">
+                    {% for lista in listas_rapidas %}
+                        <option value = "{{ lista.telefono }}"> {{lista.lista_rapida.nombre}}: {{ lista.nombre }} </option>
+                    {% endfor %}
+                </select>
+                <button type="button" id="call_quick_contact" class="btn btn-primary">{% trans 'Llamar lista rápida' %}</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="modalDtmf" class="modal">
+    <div class="modal-dialog modal-sm" style="max-width:400px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">{% trans 'Ingreso DTMF' %}</h2>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-footer">
+                <label for="dtmf" ></label>
+                <input type="text" id="dtmfInput" class="form-control"/>
+                <span id="dtmfError" class="invalid-feedback">{% trans 'Caracteres inválidos para DTMF' %}</span>
+                <button type="button" id="sendDtmf" class="btn btn-primary">{% trans 'Enviar' %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- modal que se despliega al clicar transferir -->
+<div class="modal fade" id="modalTransfer" role="dialog">
+    <div class="modal-dialog" id="transfer-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="title-transfer">{% trans 'Transferir' %}</h3>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body container form-inline">
+                <div class="form-group row">
+                    <div class="col-xs-5">
+                        <label class="typetransf-firstcolumn">{% trans 'Tipo de transferencia:' %}</label>
+                    </div>
+                    <div class="radio col-xs-4">
+                        <label>
+                            <input type="radio" name="tipotransf" id="blindTransf" class="typetransf-secondcolumn"/>&nbsp;{% trans 'Ciega' %}
+                        </label>
+                    </div>
+                    <div class="radio col-xs-3">
+                        <label>
+                            <input type="radio" name="tipotransf" id="consultTransf" class="typetransf-secondcolumn"/>&nbsp;{% trans 'Asistida' %}
+                        </label>
+                    </div>
+                </div>
+                <br>
+                <div class="form-group row">
+                    <div class="radio col-xs-4">
+                        <label>
+                            <input class="typetransf-firstcolumn" type="radio" name="dstTransf" id="transfToNum"/>&nbsp;{% trans 'a Número' %}
+                        </label>
+                    </div>
+                    <div class=" col-xs-8">
+                        <input type="text" class="form-control typetransf-secondcolumn-number" id="numberToTransfer" disabled/>
+                    </div>
+                </div>
+                <br>
+                <br>
+                <div class="form-group row">
+                    <div class="radio col-xs-4">
+                        <label>
+                            <input class="typetransf-firstcolumn" type="radio" name="dstTransf" id="transfToCamp"/>&nbsp;{% trans 'a Campaña' %}
+                        </label>
+                    </div>
+                    <div class="col-xs-8 typetransf-secondcolumn">
+                        <select class="form-control" id="campToTransfer" disabled>
+                        </select>
+                    </div>
+                </div>
+                <br>
+                <br>
+                <div class="form-group row">
+                    <div class="radio col-xs-4">
+                        <label>
+                            <input class="typetransf-firstcolumn" type="radio" name="dstTransf" id="transfToAgent"/>&nbsp;{% trans 'a Agente' %}
+                        </label>
+                    </div>
+                    <div class="col-xs-8 typetransf-secondcolumn-agent">
+                        <select class="form-control" id="agentToTransfer" disabled>
+                        </select>
+                    </div>
+                </div>
+                <br>
+                <br>
+                <div class="form-group row">
+                    <div class="radio col-xs-4">
+                        <label>
+                            <input class="typetransf-firstcolumn" type="radio" name="dstTransf" id="transfToQuickNum"/>&nbsp;{% trans 'A lista rápida' %}
+                        </label>
+                    </div>
+                    <div class="col-xs-8 typetransf-secondcolumn">
+                        <select class="form-control" id="quickNumToTransfer" disabled>
+                            {% for lista in listas_rapidas %}
+                                <option value = "{{ lista.telefono }}"> {{lista.lista_rapida.nombre}}: {{ lista.nombre }} </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body container form-inline" id="transferToSurveyContainer">
+                <div class="form-group row">
+                    <button type="button" id="makeTransferToSurvey" class="btn btn-success btn-sm">
+                        {% trans 'Transferir a Encuesta' %}
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="makeTransfer" class="btn btn-success btn-sm">{% trans 'Hecho' %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal que se despliega cuando no califique una llamada -->
+<div id="obligarCalificarCall" class="modal fade bs-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" style="max-width:400px">
+        <div class="modal-content">
+            <div class="modal-body">
+                <h2 class="modal-title">{% trans 'No puede hacer una nueva llamada hasta calificar la ultima llamada.' %}</h2>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="obligarCalificarCall_submit" class="btn btn-primary">
+                    {% trans 'Calificar' %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal que se despliega cuando no completa el formulario de gestion -->
+<div id="obligarGestionForm" class="modal fade bs-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" style="max-width:400px">
+        <div class="modal-content">
+            <div class="modal-body">
+                <h2 class="modal-title">{% trans 'No puede hacer una nueva llamada hasta que se complete el formulario de gestion.' %}</h2>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="obligarGestionForm_submit" class="btn btn-primary">
+                    {% trans 'Completar' %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- FIN transferencias -->
+
+<!-- WEBCHAT -->
+<!-- <div class="modal fade" id="modalwebChat" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+          <h1>WebChat</h1>
+          <button type="button" class="close" data-dismiss="modal">
+              <span aria-hidden="true">&times;</span>
+          </button>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+          <div class="row">
+            <input type="hidden" value="{{user}}" id="user">
+            <div class="col-md-4 col-md-offset-1">
+              <textarea class="form-control" rows="2" id="chatMessage" autocomplete="off" disabled="disabled"/></textarea>
+            </div>
+            <input type="hidden" value="">
+            <button class="btn btn-md btn-success" disabled="disabled" id="sendMessage">Enviar</button> -->
+            <!--<button type="button" id="conf" class="btn btn-info btn-sm">
+              <span class="glyphicon glyphicon-cog"></span>
+            </button>-->
+          <!-- </div><br>
+          <div class="row">
+            <input type="hidden" id="conversationId"/>
+            <div class="col-md-4 col-md-offset-1 chatWindow">
+              <ul id="messages"></ul>
+            </div>
+            <div class="col-md-4 col-md-offset-1 table-responsive">
+              <table class="table table-compressed table-stripped table-hover">
+                <thead>
+                  <th>Estado</th><th>Usuario</th><th style="text-align: right">Chatear</th>
+                </thead>
+                <tbody id="tbodyContacts">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> <!-- Fin Modal Webchat -->
+
+<!-- Modal Webchat -->
+<div class="modal fade" id="modalwebChat" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h1 class="modal-title">
+                <span class="icon icon-solid-chat"></span>{% trans 'WebChat' %}
+            </h1>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="webchatWindow">
+                <input type="hidden" id="conversationId"/>
+                <div class="chatWindow">
+                    <ul id="messages"></ul>
+                </div>
+                <div class="chatWindowActions">
+                    <div>
+                        <input type="hidden" value="{{user}}" id="user">
+                        <textarea class="form-control" rows="1" id="chatMessage" autocomplete="off" placeholder="Escribe un mensaje..." disabled="disabled"/></textarea>
+                    </div>
+                    <div>
+                        <input type="hidden" value="">
+                        <button class="btn btn-primary" disabled="disabled" id="sendMessage">{% trans 'Enviar' %}</button>
+                        <div class="dropdown">
+                            <button class="btn btn-light dropdown-toggle" type="button" id="dropdownWebchatActions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                              <span class="icon icon-cog"></span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownWebchatActions">
+                                <button class="dropdown-item" type="button">{% trans 'Acción' %}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="webchatInfo">
+                <table class="table table-compressed table-hover">
+                    <thead>
+                        <th>{% trans 'Estado' %}</th>
+                        <th>{% trans 'Usuario' %}</th>
+                        <th>{% trans 'Chatear' %}</th>
+                    </thead>
+                    <tbody id="tbodyContacts">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+  </div>
+</div> <!-- Fin Modal Webchat -->
+
+<!-- SMS -->
+<div class="modal fade" id="modalSMS" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+          <h1 class="modal-title">
+              <span class="icon icon-solid-messages"></span>{% trans 'Mensajes' %}
+          </h1>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+          </button>
+      </div>
+      <div class="modal-body">
+          <ul class="nav nav-tabs" id="messagesTabBar" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="messagesTab" data-toggle="tab" href="#messagesContent" role="tab" aria-controls="home" aria-selected="true">{% trans 'Mensajes' %}</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="registryTab" data-toggle="tab" href="#registryContent" role="tab" aria-controls="profile" aria-selected="false">{% trans 'Registro' %}</a>
+            </li>
+          </ul>
+
+          <div class="tab-content" id="messagesTabContent">
+
+            <div class="tab-pane fade show active" id="messagesContent" role="tabpanel" aria-labelledby="messagesTab">
+              <table class="table table-compressed" id="threadMsgsTable">
+                <thead>
+                  <th>{% trans 'Desde' %}</th>
+                  <th>{% trans 'A' %}</th>
+                  <th>{% trans 'Mensaje' %}</th>
+                  <th>{% trans 'Fecha' %}</th>
+                </thead>
+                <tbody id="bodyThreadMsgTable">
+                </tbody>
+              </table>
+
+              <input type="hidden" id="phoneSendThread" value="">
+
+              <textarea cols="12" rows="1" name='textSend' id="textSendThread" placeholder="{% trans 'El contenido de tu mensaje de texto aqui' %} " class="form-control" required></textarea><br>
+              <button type="button" class="btn btn-primary" id="sendMessageFromThread" data-dismiss="modal">{% trans 'Enviar' %}</button>
+            </div>
+
+            <div class="tab-pane fade" id="registryContent" role="tabpanel" aria-labelledby="registryTab">
+              <form role="form">
+                      <div class="row">
+                        <div class="col-md-7">
+                          <div class="form-group">
+                            <table class="table table-compressed" id="messagesTable">
+                                <thead>
+                                <th>{% trans 'Tel' %}</th>
+                                <th>{% trans 'Mensaje' %}</th>
+                                <th>{% trans 'Acciones' %}</th>
+                              </thead>
+                              <tbody id="cuerpoTabla">
+
+                              </tbody>
+                              <tr>
+                              </tr>
+                            </table>
+                          </div>
+                        </div>
+                          <div>
+                              <div class="form-group col-md-11">
+                                  <label for="phoneSend">{% trans 'Tel' %}</label>
+                                  <input type="text" name="phoneSend" id="phoneSend" placeholder="ej: 351 6543422" class="form-control" required>
+                              </div>
+                              <div class="form-group">
+                                  <label for="textSend">{% trans 'Mensaje' %}</label>
+                                  <textarea cols="19" rows="2" name='textSend' id="textSend" placeholder="{% trans 'El contenido de tu mensaje de texto aquí' %} " class="form-control" required></textarea>
+                              </div>
+                              <div class="form-group">
+                                  <button id="sendMessage" type="button" name="Enviar" class="btn btn-primary">{% trans 'Enviar' %}</button>
+                                  &nbsp;&nbsp;&nbsp;<label for="newSMS">{% trans 'Nuevos:' %}&nbsp;</label><label id="newSMS">0</label>
+                              </div>
+                          </div>
+                    </div>
+                </form>
+            </div>
+
+          </div>
+      </div>
+      <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">{% trans 'Cerrar' %}</button>
+      </div>
+    </div>
+  </div>
+</div> <!-- FIN SMS -->
+
+<!-- FACEBOOK CHAT -->
+<div class="modal fade" id="modalFacebook" role="dialog">
+  <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h1 class="modal-title">
+                  <span class="icon icon-solid-fb-chat"></span>{% trans 'Facebook' %} chat
+              </h1>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <div>
+                  <table class="table table-compressed" id="messagesTable">
+                      <thead>
+                          <th>{% trans 'Conversaciones' %}</th>
+                    </thead>
+                    <tbody id="cuerpoTablaFb">
+                    </tbody>
+                    <tr>
+                    </tr>
+                  </table>
+              </div>
+              <div>
+                  <form role="form">
+                        <div class="chatWindow">
+                            <div id="messagesFb"></div>
+                        </div>
+                        <div class="chatWindowActions">
+                          <div>
+                              <textarea cols="42" rows="1" name='textSend' id="textSendFb" placeholder="{% trans 'Escribe un mensaje...' %} " class="form-control" required></textarea>
+                          </div>
+                          <div>
+                              <button id="sendMessageFb" type="button" name="Enviar" class="btn btn-primary">{% trans 'Enviar' %}</button>
+                              <div class="dropdown">
+                                  <button class="btn btn-light dropdown-toggle" type="button" id="dropdownFbActions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="icon icon-cog"></span>
+                                  </button>
+                                  <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownFbActions">
+                                      <button id="endDialogFb" class="dropdown-item" type="button">{% trans 'Fin' %}</button>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                    </form>
+              </div>
+          </div>
+      </div>
+  </div>
+</div> <!-- FIN FACEBOOK CHAT -->
+
+<!-- WHATSAPP MODALS -->
+{% include "agente/modals/whatsapp/index.html" %}
+
+<!-- modal informacion -->
+<div class="modal fade" id="modalMensaje" role="dialog">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-body">
+      	<label class="infoAjax" id="infoAjax"></label>
+      </div>
+    </div>
+  </div>
+</div> <!-- fin modal info -->
+
+<div id="modalAlertContactSaved" class="modal fade bs-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" style="max-width:400px">
+        <div class="modal-content">
+            <div class="modal-body">
+                <h2 class="modal-title">{% trans 'Los datos del contacto que está por transferir no han sido guardados. ¿Desea continuar?' %}</h2>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="buttonCancelTransfer" class="btn btn-primary" data-dismiss="modal">
+                    {% trans 'No' %}
+                </button>
+                <button type="button" id="buttonContinueTransfer" class="btn btn-default">
+                    {% trans 'Si' %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Contendio -->
+<div class="wrapper-main">
+    <nav id="navBar">
+        <ul id="navMainMenu" class="list-unstyled">
+            <div class="row">
+                <div class="col-md-3">
+                  <img src="{% static 'ominicontacto/Img/ic_logo.png' %}" id="nav-logo">
+                </div>
+            </div>
+            {% if agente_profile.grupo.acceso_dashboard_agente %}
+              <li class="main-menu-li">
+                  <span class="icon icon-agenda"></span>
+                  <a class="menu-link" href="{% url 'agente_dashboard' %}" target="crm">{% trans 'Dashboard' %}</a>
+              </li>
+            {% endif %}
+            {% if agente_profile.grupo.acceso_contactos_agente %}
+            <li class="main-menu-li">
+                <span class="icon icon-notebook"></span>
+                <a class="menu-header" href="#menuContacts" role="button" data-toggle="collapse" aria-expanded="false">{% trans 'Contactos' %}</a>
+                <ul class="collapse list-unstyled submenu" id="menuContacts" data-parent="#navMainMenu">
+                    <li id="wombatId"></li>
+                    <li>
+                        <a href="{% url 'seleccion_campana_adicion_contacto' %}" target="crm">{% trans 'Nuevo contacto' %}</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'contacto_list' %}" target="crm">{% trans 'Lista de contactos' %}</a>
+                    </li>
+                </ul>
+            </li>
+            {% endif %}
+            {% if agente_profile.grupo.acceso_agendas_agente %}
+            <li id="btn_agendas" class="main-menu-li">
+                <span class="icon icon-agenda"></span>
+                <a class="menu-link" href="{% url 'agenda_contacto_listado' %}" target="crm">{% trans 'Agendas' %}<b id="num_agendas"></b></a>
+            </li>
+            {% endif %}
+            {% if agente_profile.grupo.acceso_calificaciones_agente %}
+            <li class="main-menu-li">
+                <span class="icon icon-ratings"></span>
+                <a class="menu-link" href="{% url 'reporte_agente_calificaciones' %}" target="crm">{% trans 'Calificaciones' %}</a>
+            </li>
+            {% endif %}
+            {% if campanas_preview_activas and agente_profile.grupo.acceso_campanas_preview_agente %}
+            <li class="main-menu-li">
+                <span class="icon icon-agenda"></span>
+                <a class="menu-link" href="{% url 'campana_preview_activas_miembro' %}" target="crm">{% trans 'Campañas preview' %}</a>
+            </li>
+            {% endif %}
+            {% if agente_profile.grupo.acceso_grabaciones_agente %}
+              <li class="main-menu-li">
+                  <span class="icon icon-audio-file"></span>
+                  <a class="menu-link" href="{% url 'grabacion_agente_buscar' %}" target="crm">{% trans 'Grabaciones' %}</a>
+              </li>
+            {% endif %}
+
+<!--                 <li class="main-menu-li">
+                <span class="icon icon-user"></span>
+                <a href="#" role="button" aria-expanded="false">
+                    Contactos <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu" role="menu">
+                    <li id="wombatId"></li>
+                    <li>
+                        <a href="{#% url 'campana_dialer_selecciona_campana' #%}" target="crm">Nuevo contacto</a>
+                    </li>
+                    <li>
+                        <a href="{#% url 'contacto_list' #%}" target="crm">Lista de contactos</a>
+                    </li>
+                </ul>
+            </li>
+
+          <li role="presentation" class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-expanded="false">
+                    Agendas <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu" role="menu">
+                    <li>
+                        <a href="{% url 'agenda_contacto_listado' %}" target="crm">Agenda</a>
+                    </li>
+                </ul>
+            </li>
+
+            <li>
+                <a href="{% url 'reporte_agente_calificaciones'%}" target="crm">Calificaciones</a>
+            </li>
+
+            {% if campanas_preview_activas %}
+                <li>
+                    <a href="{% url 'campana_preview_activas_miembro' %}" target="crm">Campañas preview</a>
+                </li>
+            {% endif %} -->
+
+        </ul>
+    </nav>
+
+    <div class="wrapper-content">
+        <div id="topBar">
+            <button type="button" id="sidebarCollapse" class="btn">
+                <span class="fas fa-bars"></span>
+            </button>
+            <div class="dropdown">
+              <button class="btn btn-default dropdown-toggle" type="button" id="dropdownUser" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-boundary="viewport">
+                <span class="icon icon-user"></span>
+                <span class="user-name">{{ user.get_full_name }}</span>
+              </button>
+              <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownUser">
+                  <a id="logout" class="dropdown-item" href="{% url 'api_agente_logout' %}">{% trans 'Salir' %}</a>
+                  {% if agente_profile.grupo.acceso_cambiar_contrasena_agente %}
+                  <a id="update_password" class="dropdown-item" href="{% url 'update_agent_password' %}">{% trans 'Actualizar Contraseña' %}</a>
+                  {% endif %}
+              </div>
+            </div>
+        </div>
+        <style>
+            @media (max-width: 768px) {
+                #topBar .dropdown.position-static {
+                    position: absolute !important;
+                } 
+            }
+        </style>
+
+        <div id="wrapperInner">
+            <div id="wrapperInnerContent">
+                <button class="btn btn-primary"  id="buttonVideo" style="display:none;">
+                    <i class="fas fa-video"></i>
+                    <br>
+                    {% trans 'video' %}
+                </button>
+                <div class="container" id="video-container">
+                  <button class="btn btn-outline-primary" id="reload_video_id" style="display:none;">
+                    <img src="{% static 'ominicontacto/Img/reload_green.png' %}" height="10" width="10" align="center">
+                  </button>
+                </div>
+
+                <div id="timeBar">
+                    <div id="timers">
+                        {% if agente_profile.grupo.show_console_timers %}
+                            <div id="operationTime" class="label label-default">
+                                {% trans 'Operación:' %}
+                                <span id="horaO"></span><span id="minsO"></span><span id="segsO"></span>
+                            </div>
+                            <div id="pauseTime" class="label label-default">
+                                {% trans 'Pausa:' %}
+                                <span id="horaP"></span><span id="minsP"></span><span id="segsP"></span>
+                            </div>
+                            <div id="timeToEndPause" class="label label-default d-none">
+                                {% trans 'La pausa termina en:' %}
+                                <span id="horaTEP"></span><span id="minsTEP"></span><span id="segsTEP"></span>
+                            </div>
+                        {% endif %}
+                        <!-- <div id="sumTime" class="label label-default">
+                             Total:
+                             <span id="horaT"></span><span id="minsT"></span><span id="segsT"></span>
+                             </div> -->
+                    </div>
+                    <div id="nuevoContactoPreviewDiv">
+                        {% if campanas_preview_activas %}
+                            <input class="hidden" name="campanas_preview_activas" id="campanas_preview_activas" type="text" value="{{ campanas_preview_activas }}"/>
+                            <button class="hidden" type="button" id="nuevoContactoPreview">{% trans 'Obtener contacto preview' %}</button>
+                        {% endif %}
+                    </div>
+                    <div id="timersControls">
+                        <span id="onHoldTimer" class="label label-default d-none">
+                            <span id="horaOnHold"></span><span id="minsOnHold"></span><span id="segsOnHold"></span>
+                        </span>
+                        <span id="UserStatus"></span>
+                        <button type="button" id="Pause" class="btn btn-warning btn-sm">
+                            <span class="icon icon-control-pause"></span>{% trans 'Pausar' %}
+                        </button>
+                        <button type="button" id="Resume" class="btn btn-primary btn-sm">
+                            <span class="icon icon-control-play"></span>{% trans 'Reanudar' %}
+                        </button>
+                    </div>
+
+                </div>
+                <div class="wrapper-info">
+                    {% if agente_profile.grupo.acceso_dashboard_agente %}
+                        <iframe src="{% url 'agente_dashboard' %}" id="dataView" class="agent-console-iframe" name="crm"></iframe>
+                    {% elif agente_profile.grupo.acceso_agendas_agente %}
+                        <iframe src="{% url 'agenda_contacto_listado' %}" id="dataView" class="agent-console-iframe" name="crm"></iframe>
+                    {% else %}
+                        <iframe src="{% url 'view_blanco' %}" id="dataView" class="agent-console-iframe" name="crm"></iframe>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div id="wrapperWebphone">
+                <div class="webphone-header">
+                    <button id="btnCloseWebphone"  type="button" class="btn close" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <ul class="nav nav-tabs" id="webphoneTabBar" role="tablist">
+                      <li class="nav-item">
+                          <a class="nav-link active" id="phoneTab" data-toggle="tab" href="#phoneContent" role="tab" aria-controls="phone" aria-selected="true"><span class="icon icon-solid-phone"></span>{% trans 'Teléfono' %}</a>
+                      </li>
+                      <li class="nav-item">
+                          <a class="nav-link" id="phoneRegistryTab" data-toggle="tab" href="#phoneRegistryContent" role="tab" aria-controls="registry" aria-selected="false">{% trans 'Registro' %}</a>
+                      </li>
+                    </ul>
+                </div>
+                <div class="webphone-body">
+                    <div class="tab-content" id="webphoneTabContent">
+                        <div class="tab-pane fade show active" id="phoneContent" role="tabpanel" aria-labelledby="phoneTab">
+                            <div class="container">
+                                <div class="row" id="phoneStatus">
+                                    <div class="col-md-12">
+                                        <div id="CallStatus"></div>
+                                        <div id="SipStatus"></div>
+                                    </div>
+                                </div>
+                                <div class="row" id="phoneKeys">
+                                    <div class="col-md-10">
+                                        <div class="row filaCampoNroDiscar">
+                                                <input type="text" class="form-control" id="numberToCall" name="numberToCall">
+                                        </div>
+                                        <div class="row" id="phoneKeysNumbers">
+                                              <div>
+                                                  <button id="1" class="btn key">1</button>
+                                                  <button id="2" class="btn key">2</button>
+                                                  <button id="3" class="btn key">3</button>
+                                              </div>
+                                              <div>
+                                                  <button id="4" class="btn key">4</button>
+                                                  <button id="5" class="btn key">5</button>
+                                                  <button id="6" class="btn key">6</button>
+                                              </div>
+                                              <div>
+                                                  <button id="7" class="btn key">7</button>
+                                                  <button id="8" class="btn key">8</button>
+                                                  <button id="9" class="btn key">9</button>
+                                              </div>
+                                              <div>
+                                                  <button id="hashtag" class="btn key">#</button>
+                                                  <button id="0" class="btn key">0</button>
+                                                  <button id="asterisk" class="btn key astBtn">*</button>
+                                              </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 paddingNull">
+                                        <div id="phoneKeysActions">
+                                                <button type="button" id="call" class="btn btn-outline-primary" title="{% trans 'Llamar' %}">
+                                                    <span class="icon icon-solid-phone-call"></span>
+                                                </button>
+                                                <button type="button" id="endCall" class="btn btn-outline-danger" title="{% trans 'Finalizar llamada' %}">
+                                                    <span class="icon icon-solid-phone-end"></span>
+                                                </button>
+                                                <button type="button" id="redial" class="btn btn-outline-secondary" title="{% trans 'Rellamar' %}">
+                                                    <span class="icon icon-solid-phone-redial"></span>
+                                                </button>
+                                                <button type="button" id="SignCall" class="btn btn-outline-secondary" title="{% trans 'Marcar Llamada' %}">
+                                                    <span class="icon icon-solid-phone-save"></span>
+                                                </button>
+                                                <button type="button" id="recordCall" class="btn btn-outline-secondary" title="{% trans 'Grabar Llamada' %}">
+                                                    <span>
+                                                        <input class="hidden" name="recordOnUrl" id="recordOnUrl" type="text"
+                                                               value="{% static 'ominicontacto/Img/record-on.svg' %}"/>
+                                                        <input class="hidden" name="recordOffUrl" id="recordOffUrl" type="text"
+                                                               value="{% static 'ominicontacto/Img/record-off.svg' %}"/>
+                                                        <img src="{% static 'ominicontacto/Img/record-off.svg' %}">
+                                                    </span>
+                                                </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="phoneOptions">
+                                <div id="sumTime">
+                                    <span id="horaC"></span>
+                                    <span id="minsC"></span>
+                                    <span id="segsC"></span>
+                                </div>
+                                <div>
+                                    <div id="ConferAgent"></div>
+                                </div>
+                                <div class="btn-group" data-toggle="buttons">
+                                    <button id="Transfer" class="btn btn-outline-secondary" disabled="disabled">{% trans 'Transfer' %}</button>
+                                    <button id="Confer" class="btn btn-outline-secondary" disabled="disabled">{% trans 'Confer' %}</button>
+                                    <button id="dtmf" class="btn btn-outline-secondary" disabled="disabled">{% trans 'dtmf' %}</button>
+                                </div>
+                                <div class="btn-group" data-toggle="buttons">
+                                    <button id="EndTransfer" class="btn btn-outline-secondary" disabled="disabled">{% trans 'Cancel Transfer' %}</button>
+                                    {% if agente_profile.grupo.on_hold %}
+                                        <button id="onHold" value="*198" class="btn btn-outline-secondary" disabled="disabled">{% trans 'Hold' %}</button>
+                                    {% else %}
+                                        <button id="onHold" value="*198" class="btn btn-outline-secondary" disabled="disabled" hidden>{% trans 'Hold' %}</button>
+                                    {% endif %}
+                                </div>
+                                <button id="changeCampAssocManualCall" class="btn btn-outline-secondary btn-sm">
+                                    {% trans 'Campaña: ' %}<span id="campAssocManualCall"></span>
+                                </button>
+                                <button id="call_off_campaign_menu" class="btn btn-outline-secondary btn-sm">
+                                    {% trans 'Llamar Fuera de Campaña: ' %}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="phoneRegistryContent" role="tabpanel" aria-labelledby="phoneRegistryTab">
+                            <div class="container">
+                                <div class="row" style="background:lightgrey; margin-bottom: 1rem;">
+                                    <div class="col-lg-2 col-md-2 col-xs-2">
+                                        <strong>{% trans 'Tipo' %}</strong>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-xs-4">
+                                        <strong>{% trans 'Número' %}</strong>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-xs-6">
+                                        <div><strong>{% trans 'Fecha' %} / {% trans 'Hora' %}</strong></div>
+                                    </div>
+                                </div>
+                                <div class="row" id="call_list">
+                                    {% include "agente/historico_llamadas_del_dia.html" %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <audio id="remoteAudio" autoplay="autoplay"></audio>
+                <audio id="localAudio" muted="muted"></audio>
+                <audio id="Welcome">
+                  <source id="fuenteWel" src="{% static 'ominicontacto/ring/welcome.ogg' %}" type="audio/mpeg">
+                </audio>
+                <audio id="RingIn">
+                  <source id="fuenteIn" src="{% static 'ominicontacto/ring/Kuma.ogg' %}" type="audio/mpeg">
+                </audio>
+                <audio id="RingOut">
+                  <source id="fuenteOut" src="{% static 'ominicontacto/ring/tonoallamar.ogg' %}" type="audio/mpeg">
+                </audio>
+                <audio id="RingBusy">
+                  <source id="fuentebOut" src="{% static 'ominicontacto/ring/busy.ogg' %}" type="audio/mpeg">
+                </audio>
+                <img src="{% static 'ominicontacto/Img/redcross.png' %}" style="display:none;">
+                <img src="{% static 'ominicontacto/Img/reddot.png' %}" style="display:none;">
+            </div> <!-- webphone Wrapper -->
+
+            <!-- Wrapper Whatsapp Panel -->
+            <div class="hidden" id="wrapperWhatsapp">
+                <iframe class="whatsapp_panel_view" src="{% static 'omnileads-frontend/agent_whatsapp_index.html' %}"></iframe>
+            </div>
+        </div> <!-- wrapper Inner Content -->
+    </div> <!-- wrapper-content -->
+</div> <!-- wrapper-main -->
+
+<!-- container que une la agenda con el crm-->
+<div class="container-toolbar">
+    <div id="bottomBar">
+        <div>
+          <div class="iconApp" id="webCall">
+            <span class="icon icon-solid-phone"></span>
+          </div>
+          <div class="hidden">{% trans 'Webphone' %}</div>
+        </div>
+        <div>
+          <div class="iconApp" id="txtSms">
+            <span class="icon icon-solid-messages"></span>
+          </div>
+          <div class="hidden">{% trans 'SMS' %}</div>
+        </div>
+        {% if tiene_whatsapp %}
+        <div>
+          <i id="newChat" class="fa fa-bell invisible" style="position:fixed; color:red; z-index:1;"></i>
+          <div class="iconApp" id="whatsappChat">
+            <span class="icon icon-solid-chat"></span>
+          </div>
+          <div class="hidden">{% trans 'Whatsapp'%} </div>
+        </div>
+
+        {% endif %}
+        <!-- <div>
+          <div class="iconApp" id="webChat">
+            <span class="icon icon-solid-chat"></span>
+          </div>
+          <div class="hidden">{% trans 'Webchat' %}</div>
+        </div> -->
+        <div>
+          <div class="iconApp" id="facebookChat">
+            <span class="icon icon-solid-fb-chat"></span>
+          </div>
+          <div class="hidden">{% trans 'Social chat' %}</div>
+        </div>
+        <div>
+          <div class="iconApp" id="facebookChat">
+            <i id="fbNotReadMessagesCounter" class="material-icons"></i>
+            <span class="icon icon-solid-mail"></span>
+          </div>
+          <div class="hidden">{% trans 'Email' %}</div>
+        </div>
+    </div>
+</div>
+{% include 'config.html' %}
+<!-- Main Index -->
+{% compress js %}
+<!-- JsSIP -->
+<script type="text/javascript" src="{% static 'ominicontacto/JS/config.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/ext/jssip.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/ext/state-machine-min.js' %}" ></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/constantes.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/agente/phoneJsFSM.js' %}" ></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/agente/omlAPI.js' %}" ></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/agente/phoneJsView.js' %}" ></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/agente/Timers.js' %}" ></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/agente/phoneJsSip.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/agente/phoneJsController.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/agente/click2Call.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/agente/agendas_notifications.js' %}"></script>
+<script type="text/javascript" src="{% static 'JS/ext/reconnecting-websocket-iife.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/agente/notifications.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/agente/pauseTimer.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/agente/main.js' %}"></script>
+<!-- JsSip Debug -->
+<!--<script>JsSIP.debug.enable('JsSIP:*');</script>-->
+<!-- webChat -->
+<!--script type="text/javascript" src="{% static 'ominicontacto/JS/JQueryWebChat.js' %}"></script-->
+<!-- autobahn -->
+<!-- <script type="text/javascript" src="{% static 'ominicontacto/JS/ext/autobahn.min.js' %}"></script> -->
+<!-- smschat -->
+<!--script type="text/javascript" src="{% static 'ominicontacto/JS/textMessages.js' %}"></script-->
+<!-- Socket.IO -->
+<script type="text/javascript" src="{% static 'ominicontacto/JS/ext/socket.io.js' %}"></script>
+<!-- FacebookMessenger -->
+<!--script type="text/javascript" src="{% static 'ominicontacto/JS/facebookMessenger.js' %}"></script-->
+<!-- Calendar -->
+<script type="text/javascript" src="{% static 'ominicontacto/JS/ext/moment.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/ext/bootstrap-datetimepicker.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/Calendar.js' %}"></script>
+{% endcompress %}
+<script type="text/javascript" src="{% static 'JS/ext/jitsi_external_api.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/seleccionContactosPreview.js' %}"></script>
+<script type="text/javascript" src="{% static 'JS/ext/sweetalert2.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/agente/whatsapp_modals.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/whatsapp_notifications.js' %}"></script>
+<script type="text/javascript">
+$(document).ready(function () {
+    $('select.form-control').each(function() {
+        $(this).select2({
+            width: '100%',
+            placeholder: '----------'
+        });
+    });
+
+   /* Toggle sidebar */
+   $('#sidebarCollapse').on('click',function(){
+     $('#navBar').toggleClass('active');
+   });
+
+   /* Toggle webphone from bottom bar and close button */
+   $('#btnCloseWebphone').on('click',function(){
+     $('#wrapperWebphone').removeClass('active');
+     $('#wrapperWhatsapp').addClass('hidden');
+   });
+
+   /* Toggle webphone from bottom bar and close button */
+   $('#webCall').on('click',function(){
+     $('#wrapperWebphone').toggleClass('active');
+     $('#wrapperWhatsapp').addClass('hidden');
+   });
+
+   // Get current window path
+   currentPath = window.location.pathname;
+
+   // Add active class to current selected anchor
+   $("a[href='" + currentPath + "']").addClass("active");
+
+   // Expand sidebar first level submenus for current selected anchor
+   $("a[href='" + currentPath + "']").closest('ul .submenu').collapse('show');
+
+   // Add active class to sidebar icon
+   $("a[href='" + currentPath + "']").closest('.main-menu-li').find('.icon').addClass('active');
+
+   // Whatsapp Icon Status
+   var tiene_whatsapp = '{{ tiene_whatsapp|safe }}';
+   setWhatsappStatusIcon(tiene_whatsapp === 'True');
+ });
+
+</script>
+
+</body>
+
+</html>

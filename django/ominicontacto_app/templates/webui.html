@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+{% if name == "premiumreports" %}
+<style>body { background-color: oklch(98.4% 0.003 247.858); /*slate-50*/ }</style>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+  <iframe
+    name="webui"
+    src="/{{ prefix }}-{{ name }}/{{ path }}"
+    style="border: none; display: block; height: calc(100vh - 124px); margin: 0; padding: 0; width: 100%;">
+  </iframe>
+  <script>
+    (function(){
+      const name = "{{ name | escapejs }}"
+      const prefix = "{{ prefix | escapejs }}"
+      window.addEventListener("message", function(event) {
+        if (event.data.id === "webui:inner-route-changed") {
+          history.pushState({}, "", `/${prefix}/${name}${event.data.path}`)
+        }
+      })
+    })()
+  </script>
+{% endblock content %}

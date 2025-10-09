@@ -1,0 +1,52 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% load i18n  %}
+
+<h2>{% trans 'Datos generales' %}</h2>
+<hr>
+<h3>{% trans 'Nombre' %}:<strong>{{ campana.nombre }}</strong></h3>
+<h3>{% trans 'Estado' %}: <strong>{{ campana.get_estado_display}}</strong></h3>
+<h3>{% trans 'Base de datos' %}: <strong>{{ campana.bd_contacto}}</strong></h3>
+<p>{% trans 'Opciones de calificación' %}:
+    <strong>
+        <ul>
+            {% for opcion_calificacion in opciones_calificacion %}
+                <li>{{ opcion_calificacion.nombre }}</li>
+            {% endfor %}
+        </ul>
+    </strong>
+</p>
+<p>{% trans 'Opciones de calificación de gestión' %}:
+    <strong>
+        <ul>
+            {% for opcion_calificacion in opciones_calificacion_gestion %}
+                <li>{{ opcion_calificacion.nombre }}</li>
+            {% endfor %}
+        </ul>
+    </strong>
+</p>
+<br>
+<h2>{% trans 'Resultados de las llamadas de la campaña' %}</h2>
+<hr>
+<h3>{% trans 'Contactos calificados' %}: <strong>{{ terminadas }}</strong></h3>
+<h3>{% trans 'Contactos restantes por calificar' %}: <strong>{{ estimadas }}</strong></h3>
+<br>
+{% for categoria, count in categorias.items %}
+    <p>{% trans 'Finalizados por' %} {{ categoria }}: <strong>{{ count }}</strong></p>
+{% endfor %}

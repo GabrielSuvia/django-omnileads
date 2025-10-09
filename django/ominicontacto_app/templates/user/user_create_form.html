@@ -1,0 +1,92 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "campanas/wizard_base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block head_js %}
+    <script src="{% static 'ominicontacto/JS/ext/jquery.dataTables.min.js' %}"></script>
+    {% if AGENTE_ROL_ID %}
+        <script type="text/javascript" src="{% static 'ominicontacto/JS/supervision/userCreateForm.js' %}"
+            data-agente-rol-id="{{ AGENTE_ROL_ID }}">
+        </script>
+    {% endif %}
+    <script type="text/javascript" src="{% static 'ominicontacto/JS/supervision/agent_create.js' %}"></script>
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'ominicontacto/CSS/ext/jquery.dataTables.min.css' %}">
+{% endblock %}
+
+
+{% block nav %}
+    <h1 id="titulo">
+        {{ titulo }}
+        {% if clonando_agente %}
+        <a class="btn btn-light btn-sm" href="#" onclick="obtener_campanas_agente({{ clonando_agente.agenteprofile.id }})">
+            Mostrar Campañas
+        </a>
+        {% endif %}
+    </h1>
+
+    <ul class="nav nav-indicators">
+    	{% if wizard.steps.current == '0' %}
+	        <li class="active"><a>{% trans 'Datos Básicos' %}</a></li>
+            {% if not clonando_agente %}
+	            <li class="disabled"><a>{% trans 'Selección de campañas' %}</a></li>
+            {% endif %}
+        {% else %}
+	        <li class="disabled"><a>{% trans 'Datos Básicos' %}</a></li>
+	        <li class="active"><a>{% trans 'Selección de campañas' %}</a></li>
+    	{% endif %}
+    </ul>
+{% endblock %}
+
+{% block form_render %}
+	{% include "base_form_fields.html" with form=form %}
+{% endblock %}
+
+{% block modal_content %}
+    <div class="modal" id="campanasAgenteModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title">{% trans 'Campañas' %}</h1>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                    <table class="table" id="campanasAgenteTable">
+                        <thead>
+                            <tr>
+                                <th>{% trans 'ID' %}</th>
+                                <th>{% trans 'Nombre' %}</th>
+                                <th>{% trans 'Objetivo' %}</th>
+                            </tr>
+                        </thead>
+                    </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{% trans 'Cerrar'  %}</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
+{% endblock %}
