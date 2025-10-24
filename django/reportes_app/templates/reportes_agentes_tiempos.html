@@ -1,0 +1,402 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% load util_tags %}
+
+{% block head_js %}
+<script type="text/javascript" src="{% static 'ominicontacto/JS/csrf.js' %}"></script>
+<script type="text/javascript" src="{% static 'reportes_app/JS/reportes_agentes_tiempos.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/ext/jquery.dataTables.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'JS/ext/dataTables.buttons-1.6.1.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'JS/ext/buttons.html5-1.6.1.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'JS/ext/buttons.bootstrap4.min.js' %}"></script>
+
+<style>
+.modal-lg {
+    max-width: 80% !important;
+}
+.cxtooltip{
+	padding: 0px 6px;
+	margin: 5px;
+}
+#tooltip {
+	background-color: #9FD84E;
+    border-color: #8FC641;
+    opacity: 100;
+}
+</style>
+
+{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'CSS/ext/buttons.dataTables-1.6.1.min.css' %}"></link>
+    <link rel="stylesheet" href="{% static 'CSS/ext/buttons.bootstrap4.min.css' %}"></link>
+{% endblock %}
+{% block content %}
+
+<h1>{% trans 'Agentes' %}</h1>
+<div id="wrapper-search">
+
+    <button id="btnCollapse" class="btn btn-block" type="button" data-toggle="collapse" data-target="#wrapperSearchForm" aria-expanded="true" aria-controls="wrapperSearchForm"><span class="icon icon-search"></span>{% trans "Buscar" %}</button>
+
+    <div id="wrapperSearchForm" class="show">
+
+        <form role="form" method="post" enctype="multipart/form-data" >
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <div class="form-row">
+                <div class="col-md-6">
+                    <label for="{{ form.fecha.id_for_label }}">{% trans "Fecha" %}: </label>
+                    {{form.fecha}}
+                    {{ form.fecha.errors }}
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.agente.id_for_label }}">{% trans "Agentes" %}: </label>
+                      <select name="agente" id="id_agente" multiple="" class="form-control">
+                          {% for agente in agentes_activos %}
+                              <option value="{{ agente.pk }}">{{agente.user.get_full_name}}</option>
+                          {% endfor %}
+                      </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.todos_agentes.id_for_label }}">{% trans "Todos los agentes" %}: </label>
+                      {{ form.todos_agentes }}
+                      {{ form.todos_agentes.errors }}
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.agente.id_for_label }}">{% trans "Agentes eliminados/inactivos" %}: </label>
+                      <select name="agente" id="id_agente" multiple="" class="form-control">
+                          {% for agente in agentes_eliminados %}
+                              <option value="{{ agente.pk }}">{{agente.user.get_full_name}}</option>
+                          {% endfor %}
+                      </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.agente.id_for_label }}">{% trans "Grupo de agentes" %}: </label>
+                      {{ form.grupo_agente }}
+                      {{ form.grupo_agente.errors }}
+                </div>
+            </div>
+
+            <button type="submit" id="id_buscar_btn" class="btn btn-primary">
+                {% trans "Buscar" %}
+            </button>
+            <div data-toggle="tooltip" data-placement="top" id="submit_msg" style="display: none;"
+                    title="{% trans 'ADVERTENCIA: Pedir un reporte de muchos días mientras estan operando los agentes puede generar lentitud en el sistema' %}">
+                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-question" fill="currentColor" title="sfsdfsd"  xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                </svg>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if graficos_estadisticas  %}
+
+<div>
+    <h2>{% trans 'Período:' %} {{graficos_estadisticas.fecha_desde|date:"d/m/Y"}} - {{graficos_estadisticas.fecha_hasta|date:"d/m/Y"}}</h2>
+    <hr>
+    <div class="wrapper-table table-responsive">
+        <button class="btn-collapse-table btn btn-light btn-sm" type="button" data-toggle="collapse" data-target=".multi-collapse-stats" aria-expanded="false">{% trans "Información completa" %}</button>
+        <hr class="hr-space">
+        <div class="wrapper-table table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{% trans "Agente" %}</th>
+                        <th>{% trans "Tiempo de session" %}</th>
+                        <th>{% trans "Tiempo de hold" %}</th>
+                        <th>{% trans "Porcentaje en llamada" %}</th>
+                        <th>{% trans "Llamadas procesadas" %}</th>
+                        <th>{% trans "Transferidas a Agente" %}</th>
+                        <th>{% trans "Tiempo promedio" %}</th>
+                        <th>{% trans "Intentos fallidos" %}</th>
+                        <th>{% trans "Entrantes No atendidas" %}</th>
+                        <th>{% trans "Entrantes Rechazadas" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for agente in graficos_estadisticas.agentes_tiempos %}
+                    <tr>
+                        <td>{{agente.get_nombre_agente}}
+                            <br>
+                            <a href="#" role="button" class="tiemposAgenteModal" id_agente="{{agente.agente.id}}" data-toggle="modal" data-target="#reporteFechaModal"
+                            fecha_desde="{{graficos_estadisticas.fecha_desde|date:'d/m/Y'}}" fecha_hasta="{{graficos_estadisticas.fecha_hasta|date:'d/m/Y'}}">
+                                {% trans "ver por fechas" %}</a>
+
+                        </td>
+                        <td>
+                            {% if agente.get_string_tiempo_sesion %}
+                                {{agente.get_string_tiempo_sesion}}{% trans 'hs' %}
+                            {% else %}
+                                0{% trans 'hs' %}
+                            {% endif %}
+                            <div class="collapse multi-collapse-stats">
+                                <hr>
+                                {% if agente.get_string_tiempo_pausa %}
+                                    {{agente.get_string_tiempo_pausa}}{% trans 'hs' %}
+                                {% else %}
+                                    0{% trans 'hs' %}
+                                {% endif %}
+                                <span class="label">{% trans "pausa" %}</span>,
+                                {{agente.tiempo_llamada}}{% trans 'hs' %}
+                                <span class="label">{% trans "llamada" %}</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% if agente.get_string_tiempo_hold %}
+                                {{agente.get_string_tiempo_hold}}{% trans 'hs' %}
+                            {% else %}
+                                0{% trans 'hs' %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if agente.tiempo_porcentaje_llamada %}
+                                {{agente.tiempo_porcentaje_llamada|floatformat:2}}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                            <div class="collapse multi-collapse-stats">
+                            <hr>
+                            <span>
+                            {% if agente.tiempo_porcentaje_pausa %}
+                                {{agente.tiempo_porcentaje_pausa|floatformat:2}}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                            <span class="label">{% trans "pausa" %}</span>,
+                            {% if agente.tiempo_porcentaje_wait %}
+                                {{agente.tiempo_porcentaje_wait|floatformat:2}}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                            <span class="label">{% trans "espera" %}</span>
+                            </span>
+                            </div>
+                        </td>
+                        <td>{{agente.cantidad_llamadas_procesadas}}</td>
+                        <td>{{agente.transferidas_a_agente}}</td>
+                        <td>{{agente.tiempo_promedio_llamadas|default_if_none:0}}{% trans 's' %}</td>
+                        <td>{{agente.cantidad_intentos_fallidos}}</td>
+                        <td>{{agente.cantidad_entrantes_no_atendidas}}</td>
+                        <td>{{agente.cantidad_entrantes_rechazadas}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <a class="btn btn-outline-primary" target="_blank" href="{% url 'reportes_agentes_exporta' tipo_reporte='tiempos_agentes' %}">{% trans "Exportar reporte de tiempos(CSV)" %}</a>
+</div>
+<hr>
+<div>
+    <div class="wrapper-table table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>{% trans "Agente" %}</th>
+                    <th>{% trans "Pausa" %}</th>
+                    <th>{% trans "Tipo" %}</th>
+                    <th>{% trans "Tiempo" %}</th>
+                </tr>
+            </thead>
+            {% for agente in graficos_estadisticas.agente_pausa %}
+                <tr>
+                    <td>{{agente.nombre_agente}}
+                        <a href="#" role="button" class="tiemposPausaModal" id_agente="{{agente.id}}" data-toggle="modal" data-target="#reportePausaModal"
+                        fecha_desde="{{graficos_estadisticas.fecha_desde|date:'d/m/Y'}}" fecha_hasta="{{graficos_estadisticas.fecha_hasta|date:'d/m/Y'}}"
+                        pausa_id="{{agente.pausa_id}}">
+                        {% trans "ver por fechas" %}</a>
+                    </td>
+                    <td>{{agente.pausa}}</td>
+                    <td>{{agente.tipo_de_pausa}}</td>
+                    <td>{{ agente.tiempo|format_total_seconds }}{% trans 'hs' %}</td>
+                </tr>
+            {% endfor %}
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+    <a class="btn btn-outline-primary" target="_blank" href="{% url 'reportes_agentes_exporta' tipo_reporte='pausas_agentes' %}">{% trans "Exportar reporte de pausas(CSV)" %}</a>
+</div>
+<hr>
+<div>
+    <div class="wrapper-table table-tall table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>{% trans "Agente" %}</th>
+                    <th>{% trans "Cola" %}</th>
+                    <th>{% trans "Tiempo de llamadas" %}</th>
+                    <th>{% trans "Llamadas procesadas" %}</th>
+                    <th>{% trans "Transferidas a Agente" %}</th>
+
+                </tr>
+            </thead>
+            {% for agente in graficos_estadisticas.count_llamada_campana %}
+                <tr>
+                    <td>{{agente.agente}}</td>
+                    <td>{{agente.campana}}</td>
+                    <td>{{agente.tiempo_llamadas}}{% trans 'hs' %}</td>
+                    <td>{{agente.llamadas_procesadas}}</td>
+                    <td>{{agente.transferidas_a_agente}}</td>
+
+                </tr>
+            {% endfor %}
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+    <a class="btn btn-outline-primary" target="_blank" href="{% url 'reportes_agentes_exporta' tipo_reporte='llamadas_agentes' %}">{% trans "Exportar reporte cantidad llamadas(CSV)" %}</a>
+</div>
+<hr>
+<div>
+    <h2>{% trans "Cantidad de llamadas conectadas por agente" %}</h2>
+    <br>
+    <div class="wrapper-table table-tall table-responsive">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>{% trans "Agente" %}</th>
+                <th>{% trans "Total" %}</th>
+                <th>{% trans "PREVIEW" %}</th>
+                <th>{% trans "DIALER" %}</th>
+                <th>{% trans "INBOUND" %}</th>
+                <th>{% trans "MANUAL" %}</th>
+                <th>{% trans "TRANSFERIDAS A AGENTE" %}</th>
+                <th>{% trans "TRANSFERIDAS A CAMPAÑA" %}</th>
+                <th>
+                    {% trans "TRAReporteAgentesFormNSFERIDAS CX SURVEY" %}
+                    {% if not survey_app_activado %}
+                        <button id="tooltip" type="button" class="btn btn-primary cxtooltip" data-bs-toggle="tooltip" title="{% trans 'Requiere del Addon CX Survey' %}" disabled>?</button>
+                    {% endif %}
+                </th>
+                <th>{% trans "FUERA DE CAMPAÑA" %}</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for agente, total_campana, total_preview, total_dialer, total_inbound, total_manual, total_transferidas_agente, total_transferidas_campana, total_transferidas_encuesta, total_fuera_campana in graficos_estadisticas.dict_agente_counter %}
+                    <tr>
+                        <td>{{ agente }}</td>
+                        <td>{{ total_campana }}</td>
+                        <td>{{ total_preview }}</td>
+                        <td>{{ total_dialer }}</td>
+                        <td>{{ total_inbound }}</td>
+                        <td>{{ total_manual }}</td>
+                        <td>{{ total_transferidas_agente }}</td>
+                        <td>{{ total_transferidas_campana }}</td>
+                        <td>{{ total_transferidas_encuesta}}</td>
+                        <td>{{ total_fuera_campana }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-lg-6">
+        <h3>{% trans 'Cantidad de llamadas de los agentes por tipo de llamadas' %}</h3>
+        <div class="graficos-avances col-md-auto">
+            <figure>
+                {{ graficos_estadisticas.barra_agente_total.render_unicode|safe }}
+            </figure>
+        </div>
+    </div>
+
+    <a class="btn btn-outline-primary" target="_blank" href="{% url 'reportes_agentes_exporta' tipo_reporte='llamadas_tipo_agentes' %}">{% trans "Exportar reporte de tipo de llamadas(CSV)" %}</a>
+
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="reporteFechaModal" tabindex="-1" role="dialog" aria-labelledby="reporteFechaModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title" id="reporteFechaModalLabel">{% trans "Agente" %} <strong id="nombre_agente"></strong></h1>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+            <div id="error"></div>
+            <div class="table-responsive">
+                <table class="table" id="reporteFechaModalTable" style="width: 100%;">
+                    <thead>
+                      <tr>
+                          <td>{% trans "Fecha" %}</td>
+                          <td>{% trans "Sesión" %}</td>
+                          <td>{% trans "Hold "%}</td>
+                          <td>{% trans "Pausa" %}</td>
+                          <td>{% trans "Llamada" %}</td>
+                          <td>{% trans "% En llamada" %}</td>
+                          <td>{% trans "% En pausa" %}</td>
+                          <td>{% trans "% En espera" %}</td>
+                          <td>{% trans "Llamadas procesadas" %}</td>
+                          <td>{% trans "Transferidas a Agente" %}</td>
+                          <td>{% trans "Tiempo promedio" %}</td>
+                          <td>{% trans "Intentos fallidos" %}</td>
+                          <td>{% trans "Entrantes No atendidas" %}</td>
+                          <td>{% trans "Entrantes Rechazadas" %}</td>
+                      </tr>
+                    </thead>
+                    <tbody id="output">
+                    </tbody>
+                </table>
+            </div>
+      </div>
+      <div class="modal-footer">
+        <div class="col" id="exportButtonCol"></div>
+        <div class="col text-right">
+          <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cerrar" %}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="reportePausaModal" tabindex="-1" role="dialog" aria-labelledby="reportePausaModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title" id="reportePausaModalLabel">{% trans "Agente" %} <strong id="nombre_agente_pausa"></strong> {% trans "para la pausa" %} <strong id="nombre_pausa"></strong></h1>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <tr>
+                        <td>{% trans "Fecha" %}</td>
+                        <td>{% trans "Tiempo" %}</td>
+                    </tr>
+                    <tbody id="output_pausa">
+                    </tbody>
+                </table>
+            </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cerrar" %}</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

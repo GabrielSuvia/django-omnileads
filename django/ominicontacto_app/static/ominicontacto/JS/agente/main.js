@@ -22,7 +22,7 @@
 /* 		- click2Call.js     */
 
 /* globals Timer OMLAPI KeepAliveSender Click2CallDispatcher PhoneJSController gettext */
-/* globals AgendasNotifier, NotificationSocket NotificationSocketWhatsapp */
+/* globals AgendasNotifier, NotificationSocket */
 
 /* DEBUG*/
 $('#wrapperWebphone').toggleClass('active');
@@ -69,8 +69,6 @@ function startPhoneJs() {
     var sipSecret = $('#sipSec').val();
     var max_session_age = $('#max_session_age').val();
     var video_domain = $('#video_domain').val();
-    var dtmf_duration = $('#dtmf_duration').val();
-    var dtmf_inter_tone_gap = $('#dtmf_inter_tone_gap').val();
 
     var oml_api = new OMLAPI();
 
@@ -84,7 +82,7 @@ function startPhoneJs() {
     keep_alive_sender = new KeepAliveSender(max_session_age);
     phone_controller = new PhoneJSController(
         agent_id, sipExtension, sipSecret, timers, click2call, keep_alive_sender, video_domain, notification_agent,
-        notification_agent_whatsapp, dtmf_duration, dtmf_inter_tone_gap);
+        notification_agent_whatsapp);
 
     subscribirEventosBotonesGenerales(oml_api, agent_id, timers);
     subscribirEventosBotonesOtrosMedios(oml_api);

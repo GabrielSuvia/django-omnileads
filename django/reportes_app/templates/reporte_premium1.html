@@ -1,0 +1,215 @@
+<!--
+Copyright (C) 2018 Freetech Solutions
+
+This file is part of OMniLeads
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License version 3, as published by
+the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+-->
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% load util_tags %}
+
+{% block head_js %}
+<script type="text/javascript" src="{% static 'ominicontacto/JS/csrf.js' %}"></script>
+<script type="text/javascript" src="{% static 'reportes_app/JS/reportes_agentes_tiempos.js' %}"></script>
+<script type="text/javascript" src="{% static 'ominicontacto/JS/ext/jquery.dataTables.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'JS/ext/dataTables.buttons-1.6.1.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'JS/ext/buttons.html5-1.6.1.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'JS/ext/buttons.bootstrap4.min.js' %}"></script>
+
+<style>
+.modal-lg {
+    max-width: 80% !important;
+}
+.cxtooltip{
+	padding: 0px 6px;
+	margin: 5px;
+}
+#tooltip {
+	background-color: #9FD84E;
+    border-color: #8FC641;
+    opacity: 100;
+}
+</style>
+
+{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'CSS/ext/buttons.dataTables-1.6.1.min.css' %}"></link>
+    <link rel="stylesheet" href="{% static 'CSS/ext/buttons.bootstrap4.min.css' %}"></link>
+{% endblock %}
+{% block content %}
+<h1>{% trans 'Llamadas' %} PREMIUM</h1>
+
+<div id="wrapper-search">
+  <button id="btnCollapse" class="btn btn-block" type="button" data-toggle="collapse" data-target="#wrapperSearchForm" aria-expanded="true" aria-controls="wrapperSearchForm">
+    <span class="icon icon-search"></span>{% trans 'Buscar' %}
+  </button>
+  <div id="wrapperSearchForm" class="show">
+    <form role="form" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="row">
+        <!-- Objects filter -->
+        <div class="col-md-6">
+          <div class="border rounded p-3 mb-3">
+            <h6 class="fw-semibold mb-3">Objects filter</h6>
+
+            <div class="mb-3">
+              <label for="campaign_type" class="form-label">Campaign type:</label>
+              <select id="tipo_campana" name="tipo_campana" class="form-control">
+                <option value="0">All</option>
+                <option value="1" {% if tipo_campana_id == '1' %}selected{% endif %}>Manual</option>
+                <option value="2" {% if tipo_campana_id == '2' %}selected{% endif %}>Dialer</option>
+                <option value="3" {% if tipo_campana_id == '3' %}selected{% endif %}>Entrante</option>
+                <option value="4" {% if tipo_campana_id == '4' %}selected{% endif %}>Preview</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="campaign" class="form-label">Campaign:</label>
+              <select id="id_campana" name="campana" class="form-control">
+                <option value="0">All</option>
+                {% for campana in campanas %}
+                  <option value="{{ campana.pk }}" {% if campana_id == campana.pk|stringformat:"s" %}selected{% endif %}>{{ campana.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="agent_groups" class="form-label">Agent groups: <span class="text-danger">*</span></label>
+              <select id="grupo_agente" name="grupo_agente" class="form-control">
+                <option value="0">All</option>
+                 {% for grupo in grupos_agente %}
+                  <option value="{{ grupo.pk }}" {% if grupo_id == grupo.pk|stringformat:"s" %}selected{% endif %}>{{ grupo.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="agents" class="form-label">Agents: <span class="text-danger">*</span></label>
+              <select id="id_agente" name="agente" class="form-control">
+                <option value="0">All</option>
+                {% for agente in agentes %}
+                  <option value="{{ agente.pk }}" {% if agente_id == agente.pk|stringformat:"s" %}selected{% endif %}>{{ agente.user.get_full_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-check mb-2">
+              <input id="incluir_sin_campana" name="incluir_sin_campana" class="form-check-input" type="checkbox" {% if incluir_sin_campana %}checked{% endif %} />
+              <label class="form-check-label" for="outbound_manuals"> Outbound Manuals: </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <!-- General filters -->
+          <div class="border rounded p-3 mb-3">
+            <h6 class="fw-semibold mb-3">General filters</h6>
+
+            <div class="row mb-3">
+              <div class="col">
+                <label for="phone" class="form-label">Phone:</label>
+                <input type="text" id="phone" name="phone" class="form-control" value="{{ phone|default_if_none:'' }}" />
+              </div>
+              <div class="col">
+                <label for="call_id" class="form-label">Call id:</label>
+                <input type="text" id="call_id" name="call_id" class="form-control" value="{{ call_id|default_if_none:'' }}" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Temporal filters -->
+          <div class="border rounded p-3 mb-3">
+            <h6 class="fw-semibold mb-3">Temporal filters</h6>
+
+            <div class="row mb-3">
+              <div class="col">
+                <label for="phone" class="form-label">Start date:</label>
+                <input type="date" id="fecha_inicio" name="fecha_inicio" class="form-control" required value="{{ request.POST.fecha_inicio|default_if_none:'' }}">
+              </div>
+              <div class="col">
+                <label for="call_id" class="form-label">End date:</label>
+                <input type="date" id="fecha_fin" name="fecha_fin" class="form-control" required value="{{ request.POST.fecha_fin|default_if_none:'' }}">
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col">
+                <label for="phone" class="form-label">Start date:</label>
+                <input type="time" id="hora_inicio" name="hora_inicio" class="form-control" value="{{ request.POST.hora_inicio|default_if_none:'' }}">
+              </div>
+              <div class="col">
+                <label for="call_id" class="form-label">End date:</label>
+                <input type="time" id="hora_fin" name="hora_fin" class="form-control" value="{{ request.POST.hora_fin|default_if_none:'' }}">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 text-end">
+        <button type="submit" id="id_buscar_btn" class="btn btn-primary">{% trans 'Buscar' %}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if graficos_campana %}
+<div>
+  <h2>{% trans 'Reporte de Llamadas:' %}</h2>
+  <hr />
+  <div class="wrapper-table table-responsive">
+    <button class="btn-collapse-table btn btn-light btn-sm" type="button" data-toggle="collapse" data-target=".multi-collapse-stats" aria-expanded="false">{% trans "Información completa" %}</button>
+    <hr class="hr-space" />
+    <div class="wrapper-table table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>{% trans "ID" %}</th>
+            <th>{% trans "Name" %}</th>
+            <th>{% trans "Received" %}</th>
+            <th>{% trans "Received transferences" %}</th>
+            <th>{% trans "Attended" %}</th>
+            <th>{% trans "Unattended" %}</th>
+            <th>{% trans "Abandon" %}</th>
+            <th>{% trans "Expired" %}</th>
+            <th>{% trans "% Attended" %}</th>
+            <th>{% trans "% Unattended" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for campana in graficos_campana %}
+            <tr>
+              <td>{{campana.campana_id}}</td>
+              <td>{{campana.campana_nombre}}</td>
+              <td>{{campana.received}}</td>
+              <td>{{campana.received_transferences}}</td>
+              <td>{{campana.attended}}</td>
+              <td>{{campana.unattended}}</td>
+              <td>{{campana.abandon}}</td>
+              <td>{{campana.expired}}</td>
+              <td>{{campana.percent_attended}}</td>
+              <td>{{campana.percent_unattended}}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <a class="btn btn-outline-primary" target="_blank" href="{% url 'reportes_agentes_exporta' tipo_reporte='tiempos_agentes' %}">{% trans "Exportar reporte de tiempos(CSV)" %}</a>
+</div>
+{% endif %} 
+{% endblock %}

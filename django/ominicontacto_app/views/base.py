@@ -114,6 +114,7 @@ def login_view(request):
     if request.method == "POST":
         username = request.POST['username']
         password = request.POST['password']
+
         if utils.is_already_locked(request, username=username):
             intentos_fallidos = config.FAILURE_LIMIT + 2
             detail = _("Haz tratado de loguearte {intentos_fallidos} veces,"
@@ -295,8 +296,6 @@ class ConsolaAgenteView(AddSettingsContextMixin, TemplateView):
         context['video_domain'] = video_domain
         context['fechas_agendas_json'] = json.dumps(fechas_agendas)
         context['listas_rapidas'] = ContactoListaRapida.objects.all()
-        context['dtmf_duration'] = settings.DTMF_DURATION
-        context['dtmf_inter_tone_gap'] = settings.DTMF_INTER_TONE_GAP
 
         return context
 

@@ -536,9 +536,10 @@ class SupervisorCampanaTests(CampanasTests):
         self.assertEqual(Campana.objects.get(pk=self.campana_activa.pk).objetivo, nuevo_objetivo)
         activar.assert_called_with(self.campana_activa)
 
-    @patch.object(ActivacionQueueService, "sincronizar_por_eliminacion")
+    @patch('ominicontacto_app.services.asterisk.asterisk_ami.AmiManagerClient.connect')
+    @patch.object(ActivacionQueueService, "activar")
     def test_usuario_logueado_puede_eliminar_campana_preview(
-            self, sincronizar_por_eliminacion):
+            self, activar, connect):
         url = reverse('campana_preview_delete', args=[self.campana_activa.pk])
         self.assertEqual(Campana.objects.get(
             pk=self.campana_activa.pk).estado, Campana.ESTADO_ACTIVA)

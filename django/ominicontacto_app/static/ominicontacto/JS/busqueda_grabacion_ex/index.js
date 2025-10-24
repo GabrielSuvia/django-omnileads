@@ -88,7 +88,7 @@ $(document).ready(function () {
 
     $('#pagination').on('click', '.page-link', function () {
         setLoading(true);
-        $('#id_pagina').val(this.dataset.page);
+        $('#id_pagina').val($(this).text());
         rws.send(JSON.stringify({
             'type': 'search_recordings.request',
             'data': $form.serialize(),

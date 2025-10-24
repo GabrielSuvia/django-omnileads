@@ -1,7 +1,0 @@
-[data-toggle="collapse"][aria-expanded="false"]::after {
-    content: "[+]";
-}
-
-[data-toggle="collapse"][aria-expanded="true"]::after {
-    content: "[–]";
-}
